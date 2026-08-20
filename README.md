@@ -183,6 +183,10 @@ as failed. Pending and skipped statuses include their reason and rerun location.
 Expected-failure details honor RSpec's `pending_failure_output` setting and are
 shown inline rather than duplicated in an end-of-run pending section.
 
+On RSpec 3.12, which does not provide that setting itself, requiring the
+formatter adds the same `:full`, `:no_backtrace`, and `:skip` configuration API
+for formatter use.
+
 Durations are printed next to results whose run time meets `slow_threshold`.
 The suite summary always includes total run time and spec loading time.
 
