@@ -2,7 +2,7 @@ PATH
   remote: .
   specs:
     rspec-better-formatter (0.1.0)
-      rspec-core (>= 3.12, < 4)
+      rspec-core (>= 3.12)
 
 GEM
   remote: https://rubygems.org/
@@ -31,7 +31,7 @@ PLATFORMS
 DEPENDENCIES
   logger
   rake
-  rspec (~> 3.13, >= 3.12, < 4)
+  rspec (~> 3.13, >= 3.12)
   rspec-better-formatter!
 
 CHECKSUMS
