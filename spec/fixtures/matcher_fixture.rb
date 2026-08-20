@@ -1,4 +1,7 @@
 require "rbconfig"
+require "rspec/expectations"
+
+RSpec.configure { |config| config.include RSpec::Matchers }
 
 RSpec.describe "stream matchers" do
   it "captures output from the current process" do

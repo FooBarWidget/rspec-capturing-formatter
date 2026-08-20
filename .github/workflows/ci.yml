@@ -10,7 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        rspec: ["3.12", "3.13"]
+        rspec: ["3.12", "3.13", "4.0"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -21,6 +21,19 @@ jobs:
           bundler: default
       - name: Select dependency matrix
         shell: bash
-        run: echo "BUNDLE_GEMFILE=$GITHUB_WORKSPACE/gemfiles/rspec_${{ matrix.rspec }}.gemfile" >> "$GITHUB_ENV"
+        run: |
+          if [ "${{ matrix.rspec }}" = "4.0" ]; then
+            printf '%s\n' \
+              'source "https://rubygems.org"' \
+              'gemspec path: ENV.fetch("GITHUB_WORKSPACE")' \
+              'gem "rspec", "~> 4.0"' > "$RUNNER_TEMP/rspec_4_0.gemfile"
+            echo "BUNDLE_GEMFILE=$RUNNER_TEMP/rspec_4_0.gemfile" >> "$GITHUB_ENV"
+          else
+            echo "BUNDLE_GEMFILE=$GITHUB_WORKSPACE/gemfiles/rspec_${{ matrix.rspec }}.gemfile" >> "$GITHUB_ENV"
+          fi
       - run: bundle install
+      - name: Assert RSpec version
+        run: >-
+          bundle exec ruby -rrspec/core -e
+          "expected = '${{ matrix.rspec }}'.split('.').map(&:to_i); actual = Gem.loaded_specs.fetch('rspec-core').version.segments[0, 2]; abort \"expected RSpec #{expected.join('.')} but loaded #{actual.join('.')}\" unless actual == expected"
       - run: bundle exec rspec

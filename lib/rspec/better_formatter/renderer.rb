@@ -11,6 +11,10 @@ module RSpec
         cyan: "\e[36m",
         bold: "\e[1m"
       }.freeze
+      BOM_ENCODINGS = {
+        "UTF-16" => "UTF-16BE",
+        "UTF-32" => "UTF-32BE"
+      }.freeze
 
       attr_reader :output
 
@@ -24,6 +28,9 @@ module RSpec
         @capture_open = false
         @capture_styled = false
         @sanitizers = {}
+        @pending_output = nil
+        @bom_output_encoding = nil
+        @bom_written = false
       end
 
       def failure_colorizer
@@ -38,24 +45,24 @@ module RSpec
         line(path)
       end
 
-      def context_started(path)
-        return if @entry_kind == :context && @entry_path == path
+      def context_started(path, heading: true)
+        return if !heading && @entry_kind == :context && @entry_path == path
 
         finish_capture
         begin_entry
         @entry_kind = :context
         @entry_path = path
-        line(path)
+        line(path) if heading
       end
 
-      def suite_started
-        return if @entry_kind == :suite
+      def suite_started(heading: true)
+        return if !heading && @entry_kind == :suite
 
         finish_capture
         begin_entry
         @entry_kind = :suite
         @entry_path = "RSpec suite"
-        line("RSpec suite")
+        line("RSpec suite") if heading
       end
 
       def capture(source, value, encoding = nil)
@@ -87,12 +94,17 @@ module RSpec
         line("  #{style(label, color)}#{suffix}")
       end
 
-      def pending(reason, location, skipped: false)
+      def pending(reason, location, skipped: false, run_time: nil)
         finish_capture
         label, color = status_label(skipped ? :skipped : :pending)
-        line("  #{style(label, color)}")
+        line("  #{style(label, color)}#{duration_suffix(run_time)}")
         line("  reason | #{reason}") unless reason.to_s.empty?
         line("  rerun | #{location}") unless location.to_s.empty?
+      end
+
+      def rerun_inline(command)
+        finish_capture
+        line("  rerun | #{command}")
       end
 
       def failure(notification_lines)
@@ -116,18 +128,39 @@ module RSpec
 
       def profile(notification)
         examples = notification.respond_to?(:slowest_examples) ? notification.slowest_examples : []
-        return if examples.nil? || examples.empty?
+        examples = Array(examples)
 
         finish_capture
         begin_entry
         @entry_kind = :profile
         @entry_path = nil
         line("Profile")
+        if notification.respond_to?(:slow_duration) && notification.respond_to?(:percentage)
+          line("  Slowest examples total #{format_seconds(notification.slow_duration)} (#{notification.percentage}%)")
+        end
         examples.each do |example|
           description = example.respond_to?(:full_description) ? example.full_description : example.to_s
           runtime = example.respond_to?(:execution_result) ? example.execution_result.run_time : nil
-          line("  #{format_seconds(runtime)}  #{description}")
+          location = example.location if example.respond_to?(:location)
+          suffix = location.to_s.empty? ? "" : "  #{location}"
+          line("  #{format_seconds(runtime)}  #{description}#{suffix}")
         end
+        groups = notification.slowest_groups if notification.respond_to?(:slowest_groups)
+        unless groups.nil? || groups.empty?
+          line("  Slowest example groups")
+          groups.each do |location, data|
+            total = data[:total_time] if data.respond_to?(:[])
+            count = data[:count] if data.respond_to?(:[])
+            average = data[:average] if data.respond_to?(:[])
+            description = data[:description] if data.respond_to?(:[])
+            line("  #{description}") unless description.to_s.empty?
+            line(
+              "    #{format_seconds(total)} total  #{format_seconds(average)} average  " \
+              "#{count} examples  #{location}"
+            )
+          end
+        end
+        line("  No examples profiled") if examples.empty? && (groups.nil? || groups.empty?)
       end
 
       def reruns(commands)
@@ -168,35 +201,38 @@ module RSpec
         @capture_styled = false
       end
 
+      def flush_pending
+        flush_pending_output
+      end
+
       private
 
       def emit_captured_text(source, text)
         return if text.empty?
 
-        @capture_styled = true if text.match?(/\e\[[0-9;]*m/)
+        @capture_styled = true if text.match?(/\e\[[0-?]*[ -\/]*m/)
 
         begin_entry unless @entry_started
         prefix = "  #{source} | "
+        rendered = +""
         unless @capture_open
-          write_raw(RESET) if color_enabled?
-          write_raw(prefix)
-          @capture_open = true
+          rendered << RESET if color_enabled?
+          rendered << prefix
         end
 
         parts = text.split("\n", -1)
         parts.each_with_index do |part, index|
-          write_raw(part) unless part.empty?
+          rendered << part unless part.empty?
           next unless index < parts.length - 1
 
-          write_raw(RESET) if color_enabled?
-          write_raw("\n")
-          write_raw(prefix) unless index == parts.length - 2 && parts.last.empty?
+          rendered << RESET if color_enabled?
+          rendered << "\n"
+          rendered << prefix unless index == parts.length - 2 && parts.last.empty?
         end
 
-        if text.end_with?("\n")
-          @capture_open = false
-          @capture_source = nil
-        end
+        @capture_open = true unless text.end_with?("\n")
+        @capture_open = false if text.end_with?("\n")
+        write_raw(rendered)
       end
 
       def begin_entry
@@ -215,26 +251,87 @@ module RSpec
         return if value.nil? || value.empty?
 
         text = encode_for_output(value)
-        if defined?(CaptureManager)
-          CaptureManager.instance.bypass { @output.write(text) }
+        if @pending_output.nil? || @pending_output.empty?
+          @pending_output = text.dup
         else
-          @output.write(text)
+          @pending_output << text
+        end
+        flush_pending_output
+      end
+
+      def flush_pending_output
+        while @pending_output && !@pending_output.empty?
+          written = if defined?(CaptureManager)
+            CaptureManager.instance.bypass { write_pending_chunk }
+          else
+            write_pending_chunk
+          end
+          written = @pending_output.bytesize if written.nil?
+          remaining = @pending_output.byteslice(written..)
+          @pending_output = remaining && !remaining.empty? ? remaining : nil
         end
         @output.flush if @output.respond_to?(:flush)
       end
 
-      def encode_for_output(value)
-        encoding = @output.external_encoding if @output.respond_to?(:external_encoding)
-        return value unless encoding
+      def write_pending_chunk
+        begin
+          if @output.respond_to?(:write_nonblock)
+            written = @output.write_nonblock(@pending_output)
+            raise Errno::EAGAIN if written == :wait_writable
 
-        value.encode(encoding)
-      rescue EncodingError, TypeError
-        value.each_char.map do |character|
-          begin
-            character.encode(encoding)
-          rescue EncodingError, TypeError
-            character.bytesize == 1 ? format("\\x%02X", character.getbyte(0)) : format("\\u{%X}", character.ord)
+            written
+          else
+            @output.write(@pending_output)
           end
+        rescue EncodingError, ArgumentError
+          raise if @pending_output.ascii_only?
+
+          @pending_output = ascii_fallback(@pending_output)
+          retry
+        end
+      rescue IO::WaitWritable, Errno::EAGAIN
+        raise
+      end
+
+      def encode_for_output(value)
+        requested = @output.external_encoding if @output.respond_to?(:external_encoding)
+        return value unless requested
+
+        encoding = BOM_ENCODINGS.fetch(requested.name, requested.name)
+        activate_bom_destination(encoding) if BOM_ENCODINGS.key?(requested.name)
+        encoded = begin
+          value.encode(encoding)
+        rescue EncodingError, TypeError
+          fallback = value.each_char.map do |character|
+            begin
+              character.encode(encoding).encode(Encoding::UTF_8)
+            rescue EncodingError, TypeError
+              character.bytesize == 1 ? format("\\x%02X", character.getbyte(0)) : format("\\u{%X}", character.ord)
+            end
+          end.join
+          fallback.encode(encoding)
+        end
+
+        if @bom_output_encoding && !@bom_written
+          @bom_written = true
+          "\uFEFF".encode(@bom_output_encoding) + encoded
+        else
+          encoded
+        end
+      end
+
+      def activate_bom_destination(encoding)
+        return if @bom_output_encoding
+
+        @bom_output_encoding = encoding
+        @output.set_encoding(encoding) if @output.respond_to?(:set_encoding)
+      rescue EncodingError, TypeError
+        @bom_output_encoding = encoding
+      end
+
+      def ascii_fallback(value)
+        value.bytes.map do |byte|
+          byte == 9 || byte == 10 || byte == 13 || byte.between?(0x20, 0x7E) ? byte.chr : format("\\x%02X", byte)
         end.join
       end
 

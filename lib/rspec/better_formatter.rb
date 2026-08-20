@@ -6,6 +6,25 @@ require_relative "better_formatter/configuration"
 require_relative "better_formatter/sanitizer"
 require_relative "better_formatter/stream_proxy"
 require_relative "better_formatter/renderer"
+require_relative "better_formatter/windows_command_line"
+
+unless RSpec::Core::Configuration.method_defined?(:pending_failure_output)
+  RSpec::Core::Configuration.class_eval do
+    # RSpec 3.12 has no pending failure output setting. Keep the formatter's
+    # supported setting available without changing RSpec's own presenters.
+    def pending_failure_output
+      @better_formatter_pending_failure_output ||= :full
+    end
+
+    def pending_failure_output=(value)
+      unless [:full, :no_backtrace, :skip].include?(value)
+        raise ArgumentError, "pending_failure_output must be :full, :no_backtrace, or :skip"
+      end
+
+      @better_formatter_pending_failure_output = value
+    end
+  end
+end
 
 module RSpec
   class BetterFormatter
@@ -23,117 +42,150 @@ module RSpec
 
     def initialize(output)
       @output = output
-      @renderer = BetterFormatter::Renderer.new(output, self.class.configuration)
       @manager = BetterFormatter::CaptureManager.instance
+      manager_was_active = @manager.active?
+      manager_generation = @manager.generation
+      @renderer = BetterFormatter::Renderer.new(output, self.class.configuration)
       @groups = []
+      @seen_groups = {}
       @current_example = nil
       @started = false
-      @suite_heading = false
+      @suite_heading_emitted = false
+      @report_visible = false
       @failed_reruns = []
       @seed_notification = nil
       @lease = @manager.activate(output, self)
     rescue Exception
-      @manager&.deactivate(@lease) if defined?(@lease) && @lease
+      if defined?(@lease) && @lease
+        @manager.deactivate(@lease)
+      elsif @manager && !manager_was_active
+        @manager.rollback_if_unchanged(manager_generation)
+      end
       raise
     end
 
     def start(notification)
-      @started = true
-      @count = notification.count if notification.respond_to?(:count)
-      @load_time = notification.load_time if notification.respond_to?(:load_time)
+      with_capture_lock do
+        @started = true
+        @count = notification.count if notification.respond_to?(:count)
+        @load_time = notification.load_time if notification.respond_to?(:load_time)
+      end
     end
 
     def example_group_started(notification)
-      @groups << notification.group
+      with_capture_lock { @groups << notification.group }
     end
 
     def example_group_finished(_notification)
-      @groups.pop
+      with_capture_lock { @groups.pop }
     end
 
     def example_started(notification)
-      example = notification.example
-      @groups.each { |group| @seen_groups ||= {} ; @seen_groups[group.object_id] = true }
-      @current_example = example
-      @renderer.example_started(path_for(example))
+      with_capture_lock do
+        example = notification.example
+        @groups.each { |group| @seen_groups[group.object_id] = true }
+        @current_example = example
+        @report_visible = true
+        @renderer.example_started(path_for(example))
+      end
     end
 
     def example_passed(notification)
-      finish_example(notification.example, :passed)
+      with_capture_lock { finish_example(notification.example, :passed) }
     end
 
     def example_failed(notification)
-      example = notification.example
-      finish_example(example, :failed, notification)
+      with_capture_lock do
+        example = notification.example
+        finish_example(example, :failed, notification)
+      end
     end
 
     def example_pending(notification)
-      example = notification.example
-      reason = example.execution_result.pending_message.to_s
-      skipped = example.execution_result.pending_exception.nil?
-      @renderer.pending(reason, rerun_command(example), skipped: skipped)
-      unless skipped || pending_failure_output == :skip
-        lines = failure_lines(notification, example)
-        if pending_failure_output == :no_backtrace
-          lines = lines.reject { |line| line.to_s.lstrip.start_with?("# ") }
+      with_capture_lock do
+        example = notification.example
+        reason = example.execution_result.pending_message.to_s
+        skipped = example.execution_result.pending_exception.nil?
+        @renderer.pending(
+          reason,
+          rerun_command(example),
+          skipped: skipped,
+          run_time: example.execution_result.run_time
+        )
+        unless skipped || pending_failure_output == :skip
+          lines = failure_lines(notification, example)
+          if pending_failure_output == :no_backtrace
+            lines = lines.reject { |line| strip_ansi(line.to_s).lstrip.start_with?("# ") }
+          end
+          @renderer.failure(lines)
         end
-        @renderer.failure(lines)
+        @current_example = nil
       end
-      @current_example = nil
     end
 
     def message(notification)
-      inside = !@current_example.nil?
-      @renderer.message(notification.message, inside_example: inside)
+      with_capture_lock do
+        inside = !@current_example.nil?
+        @renderer.message(notification.message, inside_example: inside)
+        @report_visible = true
+      end
     end
 
     def stop(_notification)
-      @manager.deactivate(@lease)
+      with_capture_lock { @manager.deactivate(@lease) }
     end
 
     def dump_profile(notification)
-      @renderer.profile(notification)
+      with_capture_lock { @renderer.profile(notification) }
     end
 
     def dump_summary(notification)
-      total = notification.respond_to?(:example_count) ? notification.example_count : notification.examples.to_i
-      failed = notification.respond_to?(:failure_count) ? notification.failure_count : notification.failed_examples.to_i
-      pending = notification.respond_to?(:pending_count) ? notification.pending_count : notification.pending_examples.to_i
-      @renderer.summary(
-        total: total,
-        succeeded: total - failed - pending,
-        failed: failed,
-        pending: pending,
-        duration: notification.duration,
-        load_time: notification.load_time,
-        errors: notification.errors_outside_of_examples_count
-      )
-      @renderer.reruns(@failed_reruns.uniq)
-      if @seed_notification && @seed_notification.respond_to?(:seed_used?) && @seed_notification.seed_used?
-        @renderer.seed(@seed_notification.seed)
+      with_capture_lock do
+        total = notification.respond_to?(:example_count) ? notification.example_count : notification.examples.to_i
+        failed = notification.respond_to?(:failure_count) ? notification.failure_count : notification.failed_examples.to_i
+        pending = notification.respond_to?(:pending_count) ? notification.pending_count : notification.pending_examples.to_i
+        @renderer.summary(
+          total: total,
+          succeeded: total - failed - pending,
+          failed: failed,
+          pending: pending,
+          duration: notification.duration,
+          load_time: notification.load_time,
+          errors: notification.errors_outside_of_examples_count
+        )
+        @renderer.reruns(@failed_reruns.uniq)
+        if @seed_notification && @seed_notification.respond_to?(:seed_used?) && @seed_notification.seed_used?
+          @renderer.seed(@seed_notification.seed)
+        end
       end
     end
 
     def seed(notification)
-      @seed_notification = notification
+      with_capture_lock { @seed_notification = notification }
     end
 
     def close(_notification = nil)
-      @manager.deactivate(@lease)
+      with_capture_lock { @manager.deactivate(@lease) }
     end
 
     def capture(source, value, encoding)
-      if @current_example
-        @renderer.capture(source.to_s, value, encoding)
-      else
-        ensure_suite_or_context
-        label = source == :stdout ? "suite stdout" : "suite stderr"
-        @renderer.capture(label, value, encoding)
+      with_capture_lock do
+        if @current_example
+          @renderer.capture(source.to_s, value, encoding)
+        else
+          ensure_suite_or_context
+          label = source == :stdout ? "suite stdout" : "suite stderr"
+          @renderer.capture(label, value, encoding)
+        end
       end
     end
 
     def finish_capture
-      @renderer.finish_capture
+      with_capture_lock { @renderer.finish_capture }
+    end
+
+    def flush_pending
+      with_capture_lock { @renderer.flush_pending }
     end
 
     private
@@ -141,12 +193,17 @@ module RSpec
     def finish_example(example, status, notification = nil)
       @renderer.result(status, example.execution_result.run_time)
       if notification && status == :failed
+        @renderer.rerun_inline(rerun_command(example))
         @renderer.failure(failure_lines(notification, example))
         @failed_reruns << rerun_command(example)
       elsif status == :failed
         @failed_reruns << rerun_command(example)
       end
       @current_example = nil
+    end
+
+    def with_capture_lock(&block)
+      @manager.synchronize(&block)
     end
 
     def failure_lines(notification, example)
@@ -170,10 +227,15 @@ module RSpec
 
     def ensure_suite_or_context
       if @groups.empty?
-        @renderer.suite_started
+        heading = !@suite_heading_emitted && !@report_visible
+        @renderer.suite_started(heading: heading)
+        @suite_heading_emitted = true if heading
       else
-        @renderer.context_started(context_path)
+        heading = @groups.any? { |group| !@seen_groups[group.object_id] }
+        @renderer.context_started(context_path, heading: heading)
+        @groups.each { |group| @seen_groups[group.object_id] = true }
       end
+      @report_visible = true
     end
 
     def context_path
@@ -209,10 +271,7 @@ module RSpec
     def shell_escape(value)
       return Shellwords.escape(value) unless Gem.win_platform?
 
-      return value unless value.match?(/[[:space:]"'&|<>()\[\]\^%!,;=]/)
-
-      escaped = value.gsub(/([\\"])/) { |match| "\\#{match}" }
-      "\"#{escaped}\""
+      BetterFormatter::WindowsCommandLine.rerun_argument(value)
     end
 
     def path_separator

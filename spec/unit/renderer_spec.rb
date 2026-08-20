@@ -53,4 +53,51 @@ RSpec.describe RSpec::BetterFormatter::Renderer do
     expect(output.string).to include("stdout | partial\n  rspec | Failure/Error: diagnostic\n")
     expect(output.string).to include("  rspec | RuntimeError: broken\n  stdout | continued\n")
   end
+
+  it "resets modern application SGR before formatter-owned status output" do
+    renderer.example_started("A car › it is colorful")
+    renderer.capture("stdout", "\e[38:2:255:0:0mred\e[0m\n")
+    renderer.result(:passed, 0.01)
+
+    expect(output.string).to include("\e[38:2:255:0:0mred\e[0m\n\e[0m  [PASS]")
+  end
+
+  it "writes valid text to a UTF-16 report destination" do
+    output = StringIO.new
+    output.set_encoding("UTF-16LE")
+    renderer = described_class.new(output, configuration)
+
+    renderer.example_started("A car › it is red")
+    renderer.result(:passed, 0.01)
+
+    decoded = output.string.dup.force_encoding("UTF-16LE").encode("UTF-8")
+    expect(decoded).to include("A car › it is red")
+    expect(decoded).to include("[PASS] succeeded")
+  end
+
+  it "writes only one BOM to a BOM-sensitive destination" do
+    output = StringIO.new
+    output.set_encoding("UTF-16")
+    renderer = described_class.new(output, configuration)
+
+    renderer.example_started("A car › it is red")
+    renderer.result(:passed, 0.01)
+
+    decoded = output.string.dup.force_encoding("UTF-16").encode("UTF-8")
+    expect(decoded).to include("A car › it is red")
+    expect(decoded.scan("\uFEFF").length).to be <= 1
+  end
+
+  it "escapes unrepresentable characters for legacy report encodings" do
+    output = StringIO.new
+    output.set_encoding("ISO-2022-JP")
+    renderer = described_class.new(output, configuration)
+
+    renderer.example_started("A 😀")
+    renderer.result(:passed, 0.01)
+
+    decoded = output.string.encode("UTF-8")
+    expect(decoded).to include("\\u{1F600}")
+    expect(decoded).to include("[PASS] succeeded")
+  end
 end
