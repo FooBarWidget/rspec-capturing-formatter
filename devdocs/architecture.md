@@ -1,0 +1,107 @@
+# Architecture and flow
+
+`rspec-better-formatter` is a Ruby-level RSpec formatter. It captures writes
+through the Ruby `$stdout` and `$stderr` globals, converts them into report
+entries, and writes an append-only report to the formatter destination.
+
+The design does not replace operating-system file descriptors. This is the
+main reason it works on Windows without a pipe reader or a descriptor-specific
+backend.
+
+## Main components
+
+The runtime is split into these components:
+
+- `RSpec::BetterFormatter` in `lib/rspec/better_formatter.rb` receives RSpec
+  notifications and maintains attribution state.
+- `CaptureManager` in `stream_proxy.rb` owns the process-global proxies, the
+  active formatter lease, synchronization, and the bypass scope.
+- `StreamProxy` in `stream_proxy.rb` presents a writable-IO surface and routes
+  writes either to capture or to its backing stream.
+- `Renderer` in `renderer.rb` owns report entries, spacing, prefixes, status
+  lines, failures, summaries, encoding, and flushes.
+- `Sanitizer` in `sanitizer.rb` converts captured bytes into safe UTF-8 report
+  text while retaining state across writes.
+- `Configuration` in `configuration.rb` validates the four formatter settings.
+- `WindowsCommandLine` creates pasteable Windows rerun arguments.
+
+The formatter has one renderer and one capture manager per process. The
+manager can activate only one different formatter destination at a time.
+
+## Require and run flow
+
+Requiring `rspec/better_formatter` performs two global actions:
+
+1. It loads the formatter classes and registers the notification methods.
+2. It installs inactive proxies into `$stdout` and `$stderr`.
+
+The proxies pass writes to their original streams while inactive. This makes
+require-only use transparent in output, but it changes the identity and class
+of the global objects. Code that requires an actual `IO` object must account
+for this behavior.
+
+RSpec loads files given by `--require` before it constructs the configured
+formatter. A logger created after the gem is required therefore retains a
+proxy and can be captured when the run starts. A stream reference retained
+before installation is outside the capture contract.
+
+Formatter construction follows this order:
+
+1. Save the output destination.
+2. Obtain the process-global capture manager.
+3. Construct the renderer.
+4. Initialize event and attribution state.
+5. Acquire an activation lease from the manager.
+
+If construction or activation raises, the manager rolls back its installation
+when it is safe to do so and re-raises the original exception.
+
+During the run, RSpec calls the formatter notification methods. The formatter
+updates its state under the manager's reentrant monitor. Captured writes use
+the same monitor, so a result cannot split a captured report line. At the
+`stop` event, after `after(:suite)`, the manager finishes any partial capture,
+deactivates the proxies, and restores the original globals. `close` repeats
+this operation as an idempotent fallback.
+
+The formatter keeps its renderer state after `stop` because RSpec sends summary,
+profile, seed, or close notifications later. Writes after deactivation pass
+through without formatter attribution.
+
+## Configuration
+
+`RSpec::BetterFormatter.configuration` is a process-global configuration
+object. Use `RSpec::BetterFormatter.configure` to change it:
+
+```ruby
+RSpec::BetterFormatter.configure do |config|
+  config.slow_threshold = 0.5
+  config.separator = " › "
+  config.color = true
+  config.emoji = :auto
+end
+```
+
+The defaults are `0.5`, `" › "`, `true`, and `:auto`. `slow_threshold` accepts
+a non-negative number or `nil`; `separator` must be non-empty; `color` must be
+a boolean; and `emoji` must be `:auto`, `true`, or `false`.
+
+The formatter stores the configuration object, not a copy of its values.
+`Renderer` reads the settings while rendering. This is required because a
+spec helper or a loaded spec file can configure the formatter after RSpec has
+constructed it.
+
+## Design constraints
+
+Keep these constraints when changing the architecture:
+
+- Use append-only output. Do not add carriage-return progress or cursor
+  movement.
+- Keep one human-readable formatter on a report stream. Put machine-readable
+  formatters on separate files.
+- Keep capture at the Ruby global stream layer. Do not add POSIX pipes or fork
+  based capture as a fallback for Windows.
+- Keep formatter-owned writes inside `CaptureManager#bypass` so the report does
+  not capture itself.
+- Treat stdout and stderr as process-global. Same-process parallel examples
+  cannot be attributed reliably and are unsupported.
+- Do not close RSpec's formatter output from the proxy or renderer.
