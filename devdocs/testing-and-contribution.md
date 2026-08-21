@@ -12,16 +12,17 @@ Run the default suite with:
 bundle exec rspec
 ```
 
-Check each supported RSpec dependency set explicitly:
+Check the supported dependency sets that have checked-in Gemfiles explicitly:
 
 ```sh
 BUNDLE_GEMFILE=gemfiles/rspec_3_12.gemfile bundle exec rspec
 BUNDLE_GEMFILE=gemfiles/rspec_3_13.gemfile bundle exec rspec
 ```
 
-The CI workflow also checks RSpec 4.0 and runs on Linux and Windows. The native
-`cmd.exe` quoting example is intentionally skipped on non-Windows systems. A
-Linux pass does not verify that native shell behavior.
+The CI workflow creates a temporary Gemfile to also check RSpec 4.0. It runs
+each supported RSpec version on Linux and Windows. The native `cmd.exe` quoting
+example is intentionally skipped on non-Windows systems. A Linux pass does not
+verify that native shell behavior.
 
 The gem build and installation smoke test runs as part of the integration
 suite. It checks that the built gem loads and exposes its version.

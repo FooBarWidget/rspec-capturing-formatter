@@ -25,8 +25,10 @@ The runtime is split into these components:
 - `Configuration` in `configuration.rb` validates the four formatter settings.
 - `WindowsCommandLine` creates pasteable Windows rerun arguments.
 
-The formatter has one renderer and one capture manager per process. The
-manager can activate only one different formatter destination at a time.
+The capture manager is process-global. Each formatter instance has its own
+renderer. The manager routes captured writes only to the formatter that owns
+the active lease, and can activate only one different formatter destination at
+a time.
 
 ## Require and run flow
 

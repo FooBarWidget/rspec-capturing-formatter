@@ -6,19 +6,19 @@ encoding state in one place.
 
 ## Entry state machine
 
-An entry starts when the renderer receives an example, context, suite, RSpec
-message, result, failure, summary, profile, rerun list, or seed. Before a new
-entry it:
+An entry starts when the renderer receives an example, context, suite, external
+RSpec message, summary, profile, rerun list, or seed. Before a new entry it:
 
 1. Finishes any open captured source line.
 2. Writes exactly one blank line if an earlier entry exists.
 3. Sets the new entry kind and path.
 
 An example header, its captured output, result, rerun command, and failure are
-one entry. Contiguous suite or context-hook output remains one entry until a
-group transition, example, or RSpec-owned report section starts another one.
-The renderer never uses terminal width, carriage return, cursor movement, or
-line erasure.
+one entry. Results and failures finish captured text and append lines to the
+active example entry. Contiguous suite or context-hook output remains one entry
+until a group transition, example, or RSpec-owned report section starts another
+one. The renderer never uses terminal width, carriage return, cursor movement,
+or line erasure.
 
 Captured text is flushed immediately, including an unterminated partial line.
 The renderer keeps a source prefix open for a partial line. A source change

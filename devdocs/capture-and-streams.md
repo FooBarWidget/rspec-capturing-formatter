@@ -64,9 +64,9 @@ correctly encoded newline. `print` honors Ruby's output field and record
 separators. `putc` writes the low byte for an integer.
 
 When inactive, nonblocking methods call the equivalent method on the backing
-stream. When active, the manager retains a payload if the report destination
-raises `EAGAIN` or `IO::WaitWritable`. A retry with the same payload resumes
-the write without duplicating bytes.
+stream. When active, `write_nonblock` and `syswrite` retain a payload if the
+report destination raises `EAGAIN` or `IO::WaitWritable`. A retry with the same
+payload resumes the write without duplicating bytes.
 
 ## Reopen and RSpec matchers
 

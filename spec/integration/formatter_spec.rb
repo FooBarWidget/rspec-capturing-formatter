@@ -235,6 +235,63 @@ RSpec.describe "the formatter integration" do
     expect(output).to include("logger message")
   end
 
+  it "captures output written from an example thread" do
+    command = rspec_command(
+      "--require", "rspec/better_formatter",
+      "--format", "RSpec::BetterFormatter",
+      "--no-color",
+      File.expand_path("../fixtures/thread_fixture.rb", __dir__)
+    )
+    stdout, stderr, status = Open3.capture3(*command)
+    output = stdout + stderr
+
+    expect(status).to be_success, output
+    expect(output).to include("stdout | thread output")
+  end
+
+  it "renders binary captured output safely" do
+    command = rspec_command(
+      "--require", "rspec/better_formatter",
+      "--format", "RSpec::BetterFormatter",
+      "--no-color",
+      File.expand_path("../fixtures/binary_fixture.rb", __dir__)
+    )
+    stdout, stderr, status = Open3.capture3(*command)
+    output = stdout + stderr
+
+    expect(status).to be_success, output
+    expect(output).to include("stdout | binary \\xFF")
+  end
+
+  it "joins an encoded character split across writes" do
+    command = rspec_command(
+      "--require", "rspec/better_formatter",
+      "--format", "RSpec::BetterFormatter",
+      "--no-color",
+      File.expand_path("../fixtures/encoding_fixture.rb", __dir__)
+    )
+    stdout, stderr, status = Open3.capture3(*command)
+    output = stdout + stderr
+
+    expect(status).to be_success, output
+    expect(output).to include("stdout | price \u20AC")
+  end
+
+  it "reports a fixed pending example as failed" do
+    command = rspec_command(
+      "--require", "rspec/better_formatter",
+      "--format", "RSpec::BetterFormatter",
+      "--no-color",
+      File.expand_path("../fixtures/fixed_pending_fixture.rb", __dir__)
+    )
+    stdout, stderr, status = Open3.capture3(*command)
+    output = stdout + stderr
+
+    expect(status).not_to be_success
+    expect(output).to include("failed")
+    expect(output).to include("1 total  0 succeeded  1 failed  0 pending")
+  end
+
   it "applies configuration changes made by loaded spec files" do
     command = rspec_command(
       "--require", "rspec/better_formatter",
