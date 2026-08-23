@@ -107,7 +107,8 @@ RSpec.describe RSpec::BetterFormatter do
     configuration.color = false
     configuration.emoji = false
     output = BlockingOutput.new
-    formatter = described_class.new(output)
+    manager = RSpec::BetterFormatter::CaptureManager.new
+    formatter = described_class.new(output, capture_manager: manager)
     example = Example.new(ExampleResult.new(0.01))
     notification = Notification.new(example)
     formatter.instance_variable_set(:@current_example, example)
@@ -144,7 +145,8 @@ RSpec.describe RSpec::BetterFormatter do
     configuration.color = false
     configuration.emoji = false
     output = EagainOutput.new
-    formatter = described_class.new(output)
+    manager = RSpec::BetterFormatter::CaptureManager.new
+    formatter = described_class.new(output, capture_manager: manager)
     example = Example.new(ExampleResult.new(0.01))
     formatter.instance_variable_set(:@current_example, example)
 
@@ -164,7 +166,8 @@ RSpec.describe RSpec::BetterFormatter do
     configuration.color = false
     configuration.emoji = false
     output = EagainOutput.new
-    formatter = described_class.new(output)
+    manager = RSpec::BetterFormatter::CaptureManager.new
+    formatter = described_class.new(output, capture_manager: manager)
     example = Example.new(ExampleResult.new(0.01))
     formatter.instance_variable_set(:@current_example, example)
 
@@ -184,7 +187,8 @@ RSpec.describe RSpec::BetterFormatter do
     configuration.color = false
     configuration.emoji = false
     output = PartialEagainOutput.new
-    formatter = described_class.new(output)
+    manager = RSpec::BetterFormatter::CaptureManager.new
+    formatter = described_class.new(output, capture_manager: manager)
     example = Example.new(ExampleResult.new(0.01))
     formatter.instance_variable_set(:@current_example, example)
 

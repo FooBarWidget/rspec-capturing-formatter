@@ -21,9 +21,10 @@ module RSpec
 
       attr_reader :output
 
-      def initialize(output, configuration)
+      def initialize(output, configuration, capture_manager: nil)
         @output = output || StringIO.new
         @configuration = configuration
+        @capture_manager = capture_manager
         @entry_started = false
         @entry_kind = nil
         @entry_path = nil
@@ -264,7 +265,9 @@ module RSpec
 
       def flush_pending_output
         while @pending_output && !@pending_output.empty?
-          written = if defined?(CaptureManager)
+          written = if @capture_manager
+            @capture_manager.bypass { write_pending_chunk }
+          elsif defined?(CaptureManager)
             CaptureManager.instance.bypass { write_pending_chunk }
           else
             write_pending_chunk

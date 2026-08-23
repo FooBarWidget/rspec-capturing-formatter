@@ -24,12 +24,16 @@ module RSpec
 
     attr_reader :output
 
-    def initialize(output)
+    def initialize(output, capture_manager: BetterFormatter::CaptureManager.instance)
       @output = output
-      @manager = BetterFormatter::CaptureManager.instance
+      @manager = capture_manager
       manager_was_active = @manager.active?
       manager_generation = @manager.generation
-      @renderer = BetterFormatter::Renderer.new(output, self.class.configuration)
+      @renderer = BetterFormatter::Renderer.new(
+        output,
+        self.class.configuration,
+        capture_manager: @manager
+      )
       @groups = []
       @seen_groups = {}
       @current_example = nil

@@ -32,10 +32,12 @@ RSpec loads files given by `--require` before it constructs the configured forma
 Formatter construction follows this order:
 
 1. Save the output destination.
-2. Obtain the process-global capture manager.
+2. Obtain the process-global capture manager, unless an isolated manager was injected for a unit test.
 3. Construct the renderer.
 4. Initialize event and attribution state.
 5. Acquire an activation lease from the manager.
+
+The optional `capture_manager:` initializer argument exists for unit-test isolation. Normal RSpec construction uses the process-global manager, so it still enforces one active formatter for the process. The renderer receives the same manager so formatter-owned writes use the matching bypass scope.
 
 If construction or activation raises, the manager rolls back its installation when it is safe to do so and re-raises the original exception.
 

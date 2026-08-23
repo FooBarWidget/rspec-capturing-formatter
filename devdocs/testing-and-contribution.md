@@ -15,6 +15,8 @@ Unit tests isolate behavior that does not need a real RSpec process:
 - manager leases, activation rollback, bypass, and synchronization;
 - Windows argument escaping.
 
+Formatter unit tests that construct `BetterFormatter` pass a fresh `CaptureManager` through `capture_manager:`. This prevents the formatter used to dogfood the suite from conflicting with the formatter under test. The normal singleton manager remains covered by the lease and integration tests.
+
 Integration tests run fixture suites in fresh Ruby processes with `Open3`.
 They cover:
 

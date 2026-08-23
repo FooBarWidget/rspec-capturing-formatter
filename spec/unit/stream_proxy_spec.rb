@@ -154,11 +154,15 @@ RSpec.describe RSpec::BetterFormatter::StreamProxy do
   end
 
   it "rejects a concurrent formatter without disabling the owner" do
-    first = RSpec::BetterFormatter.new(StringIO.new)
+    manager = RSpec::BetterFormatter::CaptureManager.new
+    first = RSpec::BetterFormatter.new(StringIO.new, capture_manager: manager)
 
-    expect { RSpec::BetterFormatter.new(StringIO.new) }.to raise_error(RuntimeError)
-    expect(RSpec::BetterFormatter::CaptureManager.instance).to be_active
+    expect {
+      RSpec::BetterFormatter.new(StringIO.new, capture_manager: manager)
+    }.to raise_error(RuntimeError)
+    expect(manager).to be_active
   ensure
     first&.close
+    manager&.restore!
   end
 end
