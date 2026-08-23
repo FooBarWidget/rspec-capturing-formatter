@@ -23,6 +23,20 @@ RSpec.describe RSpec::BetterFormatter::Renderer do
     )
   end
 
+  it "shows qualifying durations for pending and skipped examples" do
+    renderer.example_started("A car › it is pending")
+    renderer.pending("known issue", "rspec spec/car_spec.rb:1", run_time: 0.75)
+    renderer.example_started("A car › it is skipped")
+    renderer.pending("not available", "rspec spec/car_spec.rb:2", skipped: true, run_time: 1.25)
+
+    expect(output.string).to eq(
+      "A car › it is pending\n  [PENDING] pending  750 ms\n" \
+      "  reason | known issue\n  rerun | rspec spec/car_spec.rb:1\n\n" \
+      "A car › it is skipped\n  [SKIP] skipped  1.25 s\n" \
+      "  reason | not available\n  rerun | rspec spec/car_spec.rb:2\n"
+    )
+  end
+
   it "flushes partial lines and labels each physical line" do
     renderer.example_started("A car › it beeps")
     renderer.capture("stdout", "starting")

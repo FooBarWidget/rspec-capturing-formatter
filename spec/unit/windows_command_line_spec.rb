@@ -46,7 +46,7 @@ RSpec.describe RSpec::BetterFormatter::WindowsCommandLine do
         end.join(" ")
         stdout, stderr, status = Open3.capture3(
           {"RBF_SENTINEL" => "EXPANDED"},
-          ENV.fetch("COMSPEC", "cmd.exe"), "/d", "/v:off", "/s", "/c", body
+          ENV.fetch("COMSPEC", "cmd.exe"), "/d", "/v:on", "/s", "/c", body
         )
 
         expect(status).to be_success, stderr

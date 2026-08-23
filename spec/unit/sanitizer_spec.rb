@@ -193,6 +193,13 @@ RSpec.describe RSpec::BetterFormatter::Sanitizer do
     expect(sanitizer.process("\e[38:2:255:0:0mred\e[2K")).to eq("\e[38:2:255:0:0mred\\e[2K")
   end
 
+  it "escapes an unterminated colon-form SGR at a boundary" do
+    sanitizer = described_class.new
+
+    expect(sanitizer.process("\e[38:2:255:0:0")).to eq("")
+    expect(sanitizer.finish).to eq("\\e[38:2:255:0:0")
+  end
+
   it "escapes an overlong incomplete control sequence" do
     sanitizer = described_class.new
 

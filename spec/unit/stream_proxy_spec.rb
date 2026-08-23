@@ -131,11 +131,13 @@ RSpec.describe RSpec::BetterFormatter::StreamProxy do
     native_backing = NativePassthrough.new
     native_proxy = described_class.new(native_backing, :stdout, manager)
 
-    expect(native_proxy.write_nonblock("abc", exception: false)).to eq(2)
-    expect(native_proxy.syswrite("def")).to eq(1)
+    expect(native_proxy.write_nonblock("abc")).to eq(2)
+    expect(native_proxy.write_nonblock("def", exception: false)).to eq(2)
+    expect(native_proxy.syswrite("ghi")).to eq(1)
     expect(native_backing.calls).to eq([
-      [:write_nonblock, "abc", false],
-      [:syswrite, "def"]
+      [:write_nonblock, "abc", true],
+      [:write_nonblock, "def", false],
+      [:syswrite, "ghi"]
     ])
   end
 
