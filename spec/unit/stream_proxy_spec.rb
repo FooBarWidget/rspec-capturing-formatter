@@ -16,6 +16,28 @@ RSpec.describe RSpec::BetterFormatter::StreamProxy do
     end
   end
 
+  class NativePassthrough
+    attr_reader :calls
+
+    def initialize
+      @calls = []
+    end
+
+    def write(*)
+      raise "ordinary write was used"
+    end
+
+    def write_nonblock(value, exception: true)
+      @calls << [:write_nonblock, value, exception]
+      value.bytesize - 1
+    end
+
+    def syswrite(value)
+      @calls << [:syswrite, value]
+      value.bytesize - 2
+    end
+  end
+
   let(:manager) { PassthroughManager.new }
   let(:backing) { StringIO.new }
   subject(:proxy) { described_class.new(backing, :stdout, manager) }
@@ -103,6 +125,18 @@ RSpec.describe RSpec::BetterFormatter::StreamProxy do
     expect(proxy.write_nonblock("abc", exception: false)).to eq(3)
     expect(proxy.syswrite("def")).to eq(3)
     expect(backing.string).to eq("abcdef")
+  end
+
+  it "uses native nonblocking and syswrite methods in passthrough mode" do
+    native_backing = NativePassthrough.new
+    native_proxy = described_class.new(native_backing, :stdout, manager)
+
+    expect(native_proxy.write_nonblock("abc", exception: false)).to eq(2)
+    expect(native_proxy.syswrite("def")).to eq(1)
+    expect(native_backing.calls).to eq([
+      [:write_nonblock, "abc", false],
+      [:syswrite, "def"]
+    ])
   end
 
   it "returns wait_writable for a nonblocking capture write when requested" do
