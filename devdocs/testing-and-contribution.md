@@ -7,15 +7,13 @@ The test suite protects both output details and process-global behavior. Use the
 Run the default suite with:
 
 ```sh
-bundle exec rspec
+bundle exec ruby -S --enable=frozen-string-literal rspec
 ```
 
 Check the supported dependency sets that have checked-in Gemfiles explicitly:
 
 ```sh
-BUNDLE_GEMFILE=gemfiles/rspec_3_12.gemfile bundle exec rspec
-BUNDLE_GEMFILE=gemfiles/rspec_3_13.gemfile bundle exec rspec
-BUNDLE_GEMFILE=gemfiles/rspec_4_0.gemfile bundle exec rspec
+BUNDLE_GEMFILE=gemfiles/rspec_<VERSION>.gemfile bundle exec ruby -S --enable=frozen-string-literal rspec
 ```
 
 The CI workflow runs each checked-in dependency set on Linux and Windows. The native `cmd.exe` quoting example is intentionally skipped on non-Windows systems. A Linux pass does not verify that native shell behavior.

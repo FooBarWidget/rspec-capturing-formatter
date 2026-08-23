@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RSpec
   class BetterFormatter
     # Converts terminal-affecting application output into safe report text.

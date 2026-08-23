@@ -31,8 +31,8 @@ Use judgment to handle low-impact problems autonomously and mention noteworthy o
 
 # Testing
 
-- Test with `bundle exec rspec`
-- Test specific RSpec version compatibility with `BUNDLE_GEMFILE=gemfiles/rspec_*.gemfile bundle exec rspec`
+- Test with `RUBYOPT=--enable=frozen-string-literal bundle exec rspec`
+- Test specific RSpec version compatibility with `RUBYOPT=--enable=frozen-string-literal BUNDLE_GEMFILE=gemfiles/rspec_*.gemfile bundle exec rspec`
 - The native `cmd.exe` quoting test is intentionally skipped off Windows; do not treat a Linux pass as Windows verification
 
 ## Testability (not for shell scripts)
