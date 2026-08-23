@@ -28,6 +28,7 @@ Use judgment to handle low-impact problems autonomously and mention noteworthy o
 - Use sentence case for all headings and subheadings, not title case
 - Use ASD-STE100 Simplified Technical English
 - Documents: don't cap line widths
+- User-facing documents: avoid references to internals, focus on public contract and behavior
 
 # Testing
 
