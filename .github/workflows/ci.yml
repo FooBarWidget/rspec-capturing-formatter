@@ -11,6 +11,8 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         rspec: ["3.12", "3.13", "4.0"]
+    env:
+      BUNDLE_GEMFILE: gemfiles/rspec_${{ matrix.rspec }}.gemfile
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -18,10 +20,5 @@ jobs:
         with:
           ruby-version: "3.4"
           bundler-cache: true
-          bundler: default
-      - name: Select dependency matrix
-        shell: bash
-        run: |
-          echo "BUNDLE_GEMFILE=$GITHUB_WORKSPACE/gemfiles/rspec_${{ matrix.rspec }}.gemfile" >> "$GITHUB_ENV"
-      - run: bundle install
-      - run: bundle exec rspec
+          bundler: default # Test compatibility with Ruby-default bundler
+      - run: bundle exec rspec --force-color

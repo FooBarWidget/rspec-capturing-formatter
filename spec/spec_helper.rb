@@ -3,5 +3,5 @@ require "rspec"
 require "rspec/better_formatter"
 
 RSpec.configure do |config|
-  config.disable_monkey_patching!
+  config.disable_monkey_patching! if config.respond_to?(:disable_monkey_patching!)
 end

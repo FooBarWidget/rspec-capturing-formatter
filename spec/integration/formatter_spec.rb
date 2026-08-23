@@ -174,7 +174,7 @@ RSpec.describe "the formatter integration" do
 
     backtrace_command = skip_command.dup
     backtrace_command[-1] = File.expand_path("../fixtures/pending_backtrace_fixture.rb", __dir__)
-    backtrace_command[backtrace_command.index("--no-color")] = "--color"
+    backtrace_command[backtrace_command.index("--no-color")] = "--force-color"
     backtrace_stdout, backtrace_stderr, backtrace_status = Open3.capture3(*backtrace_command)
     backtrace_output = backtrace_stdout + backtrace_stderr
     expect(backtrace_status).to be_success, backtrace_output
@@ -523,7 +523,7 @@ RSpec.describe "the formatter integration" do
       original_stderr = $stderr
       require "rspec/better_formatter"
       status = RSpec::Core::Runner.run([
-        "--format", "RSpec::BetterFormatter", "--no-color", "--fail-fast",
+        "--format", "RSpec::BetterFormatter", "--no-color", "--order", "defined", "--fail-fast=1",
         #{File.expand_path("../fixtures/fail_fast_fixture.rb", __dir__).inspect}
       ])
       abort "expected failure" unless status == 1
