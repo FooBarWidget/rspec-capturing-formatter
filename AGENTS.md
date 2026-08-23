@@ -5,6 +5,7 @@ This is the codebase for the rspec-better-formatter gem: keeps test progress rea
 - Before starting work, read the table of contents in `./devdocs/README.md` to discover available developer documentation. Read relevant documents as needed for the task.
 - `README.md` is curated user documentation: defines public commitments without listing every behavior.
 - Prioritize Windows compatibility, append-only output, and one human-readable formatter per stream.
+- When picking colors, pick those that are readable in both light and dark themed terminals.
 
 ## General coding guidelines
 

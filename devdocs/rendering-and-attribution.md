@@ -34,7 +34,7 @@ The source label is selected before rendering:
 - `suite stdout` and `suite stderr` outside an example;
 - `rspec` for formatter messages from RSpec itself.
 
-Every physical captured line has two spaces, its source label, ` | `, and the payload. A newline-terminated chunk does not leave a dangling prefix. A partial chunk is still written immediately and is completed at the next boundary.
+Every physical captured line has two spaces, its source label, ` | `, and the payload. With formatter color enabled, stdout and suite-stdout prefixes use gray, while stderr and suite-stderr prefixes use yellow. The payload is not wrapped in formatter color, so application SGR sequences remain unchanged. A newline-terminated chunk does not leave a dangling prefix. A partial chunk is still written immediately and is completed at the next boundary.
 
 ## Results and timing
 
@@ -54,4 +54,4 @@ The summary notification is authoritative. The renderer prints total, succeeded,
 
 ## Styling boundaries
 
-Captured application SGR sequences remain in the payload. The sanitizer turns other terminal controls into visible text. The renderer writes a reset before formatter-owned lines and at captured boundaries, so application styling does not bleed into statuses, failures, or summaries. Formatter styling does not change captured applications' own `NO_COLOR` behavior.
+Captured application SGR sequences remain in the payload. The sanitizer turns other terminal controls into visible text. The renderer writes a reset before formatter-owned lines and at captured boundaries, so application styling does not bleed into statuses, failures, or summaries. Example headers are bold when formatter color is enabled. Formatter styling does not change captured applications' own `NO_COLOR` behavior.

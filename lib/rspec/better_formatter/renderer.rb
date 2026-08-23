@@ -12,7 +12,14 @@ module RSpec
         red: "\e[31m",
         yellow: "\e[33m",
         cyan: "\e[36m",
+        gray: "\e[90m",
         bold: "\e[1m"
+      }.freeze
+      SOURCE_COLORS = {
+        "stdout" => :gray,
+        "stderr" => :yellow,
+        "suite stdout" => :gray,
+        "suite stderr" => :yellow
       }.freeze
       BOM_ENCODINGS = {
         "UTF-16" => "UTF-16BE",
@@ -46,7 +53,7 @@ module RSpec
         begin_entry
         @entry_kind = :example
         @entry_path = path
-        line(path)
+        line(path, :bold)
       end
 
       def context_started(path, heading: true)
@@ -103,12 +110,12 @@ module RSpec
         label, color = status_label(skipped ? :skipped : :pending)
         line("  #{style(label, color)}#{duration_suffix(run_time)}")
         line("  reason | #{reason}") unless reason.to_s.empty?
-        line("  rerun | #{location}") unless location.to_s.empty?
+        line("  rerun  | #{location}") unless location.to_s.empty?
       end
 
       def rerun_inline(command)
         finish_capture
-        line("  rerun | #{command}")
+        line("  rerun  | #{command}")
       end
 
       def failure(notification_lines)
@@ -217,7 +224,7 @@ module RSpec
         @capture_styled = true if text.match?(/\e\[[0-?]*[ -\/]*m/)
 
         begin_entry unless @entry_started
-        prefix = "  #{source} | "
+        prefix = style("  #{source} | ", SOURCE_COLORS[source])
         rendered = +""
         unless @capture_open
           rendered << RESET if color_enabled?
@@ -245,9 +252,9 @@ module RSpec
         @entry_started = true
       end
 
-      def line(value)
+      def line(value, color = nil)
         write_raw(RESET) if color_enabled?
-        write_raw(style(value.to_s, nil))
+        write_raw(style(value.to_s, color))
         write_raw("\n")
       end
 

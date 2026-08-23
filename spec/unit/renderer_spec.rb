@@ -23,6 +23,34 @@ RSpec.describe RSpec::BetterFormatter::Renderer do
     )
   end
 
+  it "prints example descriptions in bold when color is enabled" do
+    configuration.color = true
+
+    renderer.example_started("A car › it is red")
+
+    expect(output.string).to eq("\e[0m\e[1mA car › it is red\e[0m\n")
+  end
+
+  it "colors stdout and stderr prefixes without coloring their payloads" do
+    configuration.color = true
+
+    renderer.example_started("A car › it logs")
+    renderer.capture("stdout", "plain output\n")
+    renderer.capture("stderr", "warning output\n")
+
+    expect(output.string).to include("\e[90m  stdout | \e[0mplain output\e[0m\n")
+    expect(output.string).to include("\e[33m  stderr | \e[0mwarning output\e[0m\n")
+  end
+
+  it "keeps application colors after the source prefix" do
+    configuration.color = true
+
+    renderer.example_started("A car › it logs")
+    renderer.capture("stdout", "\e[31mred output\e[0m\n")
+
+    expect(output.string).to include("\e[90m  stdout | \e[0m\e[31mred output\e[0m\e[0m\n")
+  end
+
   it "shows qualifying durations for pending and skipped examples" do
     renderer.example_started("A car › it is pending")
     renderer.pending("known issue", "rspec spec/car_spec.rb:1", run_time: 0.75)
