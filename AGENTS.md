@@ -12,9 +12,10 @@ This is the codebase for the rspec-better-formatter gem: keeps test progress rea
 - Proper error handling
   - Shell scripts: use pipefail
   - When ignoring errors, only ignore specific errors, not blanket ignore all errors
-- Strategically use comments to:
-  - Explain complicated algorithms in high-level manner. Goal: aid human readability.
-  - Document caveats and non-obvious decisions.
+- Commenting strategy:
+  - Use concise comments to explain non-obvious why: algorithms, invariants, caveats, and local design decisions. Avoid narrating straightforward code.
+  - Important classes/modules should briefly state their responsibility when not obvious.
+  - Keep comments local and short. Broader architecture, substantial rationale, or complex/cross-cutting caveats belong in the developer handbook; comments may summarize and link to it.
 
 # Escalation policy
 
@@ -58,3 +59,8 @@ Content coverage:
 - Omit obvious/trivial information, focus on important things
 - Minimize/omit information already in public user docs. The handbook assumes the reader has adequate user-facing knowledge of the project.
 - `devdocs/README.md` is to be the table of contents file, linking to everything else, with concise & keyword-heavy descriptions. For AI, this functions like a lightweight skill router.
+
+Output requirements:
+
+- One markdown file per major topic. Cross-link where appropriate.
+- Must reflect current behavior rather than idealized goal. If they differ, document the divergence.

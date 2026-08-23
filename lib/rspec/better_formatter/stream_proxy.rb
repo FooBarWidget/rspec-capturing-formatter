@@ -2,6 +2,7 @@ require "monitor"
 
 module RSpec
   class BetterFormatter
+    # Coordinates process-global stream proxies, formatter leases, synchronized writes, and bypass state.
     class CaptureManager
       Lease = Struct.new(:manager, :owner, :generation, keyword_init: true) do
         def owner?
@@ -192,6 +193,7 @@ module RSpec
       end
     end
 
+    # Provides an IO-like boundary for captured writes and the raw mode required by RSpec output matchers.
     class StreamProxy
       attr_reader :source
 
