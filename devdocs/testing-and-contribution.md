@@ -1,22 +1,6 @@
 # Testing and contribution
 
-The test suite protects both output details and process-global behavior. Use the public README as the behavior contract, then update the handbook when a design decision or boundary changes.
-
-## Commands
-
-Run the default suite with:
-
-```sh
-bundle exec ruby -S --enable=frozen-string-literal rspec
-```
-
-Check the supported dependency sets that have checked-in Gemfiles explicitly:
-
-```sh
-BUNDLE_GEMFILE=gemfiles/rspec_<VERSION>.gemfile bundle exec ruby -S --enable=frozen-string-literal rspec
-```
-
-The CI workflow runs each checked-in dependency set on Linux and Windows. The native `cmd.exe` quoting example is intentionally skipped on non-Windows systems. A Linux pass does not verify that native shell behavior.
+The test suite protects both output details and process-global behavior.
 
 The gem build and installation smoke test runs as part of the integration suite. It checks that the built gem loads and exposes its version.
 
@@ -49,12 +33,9 @@ Use argument arrays with `Open3`. Do not build a shell command string. This is r
 
 When changing behavior:
 
-1. Identify the public promise in `README.md`.
-2. Add a focused unit test for local state or formatting.
-3. Add a fresh-process integration fixture when globals or RSpec event order are involved.
-4. Run the default suite and the relevant RSpec compatibility Gemfile.
-5. Update the README if the public behavior changed.
-6. Update the relevant handbook topic if the design or boundary changed.
+1. Add a focused unit test for local state or formatting.
+2. Add a fresh-process integration fixture when globals or RSpec event order are involved.
+3. Run the affected tests and any relevant RSpec compatibility suite.
 
 Prefer representative complete-output assertions for spacing and scanability. Normalize only values that are inherently variable, such as durations and temporary paths. Do not hide labels, blank lines, prefixes, or ordering behind overly broad matchers.
 
@@ -65,7 +46,3 @@ Change capture routing in `CaptureManager` and `StreamProxy`. Change report layo
 Do not add a second capture backend for one platform without a separate design.
 Do not use a non-reentrant lock around a write that can call back into a proxy.
 Do not register RSpec failure or pending dump events because those details are already inline.
-
-## Writing style
-
-Use sentence case for headings and subheadings. Use ASD-STE100 Simplified Technical English. Keep comments short and explain only non-obvious design choices. Document current behavior and explicit limitations instead of describing an ideal implementation that the tests do not enforce.

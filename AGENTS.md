@@ -3,7 +3,7 @@ This is the codebase for the rspec-better-formatter gem: keeps test progress rea
 # General principles
 
 - Before starting work, read the table of contents in `./devdocs/README.md` to discover available developer documentation. Read relevant documents as needed for the task.
-- Source of truth: treat `./README.md` as the public behavior contract.
+- Source of truth: treat `./README.md` (public user docs) as the public behavior contract.
 - Prioritize Windows compatibility, append-only output, and one human-readable formatter per stream.
 
 ## General coding guidelines
@@ -56,9 +56,11 @@ Content coverage:
 - Major design patterns where non-obvious
 - Major or non-obvious design decisions
 - Major subsystems
-- Omit obvious/trivial information, focus on important things
-- Minimize/omit information already in public user docs. The handbook assumes the reader has adequate user-facing knowledge of the project.
 - `devdocs/README.md` is to be the table of contents file, linking to everything else, with concise & keyword-heavy descriptions. For AI, this functions like a lightweight skill router.
+- Minimize/omit:
+  - Obvious/trivial information, focus on important things
+  - Info already in public user docs. The handbook assumes the reader has adequate user-facing knowledge of the project.
+  - Info already in `AGENTS.md` and `CONTRIBUTING.md`
 
 Output requirements:
 
