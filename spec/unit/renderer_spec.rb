@@ -31,15 +31,15 @@ RSpec.describe RSpec::BetterFormatter::Renderer do
     expect(output.string).to eq("\e[0m\e[1mA car › it is red\e[0m\n")
   end
 
-  it "colors stdout and stderr prefixes without coloring their payloads" do
+  it "colors plain stdout and stderr payloads" do
     configuration.color = true
 
     renderer.example_started("A car › it logs")
     renderer.capture("stdout", "plain output\n")
     renderer.capture("stderr", "warning output\n")
 
-    expect(output.string).to include("\e[90m  stdout | \e[0mplain output\e[0m\n")
-    expect(output.string).to include("\e[33m  stderr | \e[0mwarning output\e[0m\n")
+    expect(output.string).to include("\e[90m  stdout | \e[0m\e[90mplain output\e[0m\e[0m\n")
+    expect(output.string).to include("\e[33m  stderr | \e[0m\e[33mwarning output\e[0m\e[0m\n")
   end
 
   it "keeps application colors after the source prefix" do

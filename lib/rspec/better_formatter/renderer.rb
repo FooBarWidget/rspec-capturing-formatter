@@ -233,7 +233,7 @@ module RSpec
 
         parts = text.split("\n", -1)
         parts.each_with_index do |part, index|
-          rendered << part unless part.empty?
+          rendered << captured_part(source, part)
           next unless index < parts.length - 1
 
           rendered << RESET if color_enabled?
@@ -244,6 +244,12 @@ module RSpec
         @capture_open = true unless text.end_with?("\n")
         @capture_open = false if text.end_with?("\n")
         write_raw(rendered)
+      end
+
+      def captured_part(source, value)
+        return value if value.empty? || @capture_styled
+
+        style(value, SOURCE_COLORS[source])
       end
 
       def begin_entry

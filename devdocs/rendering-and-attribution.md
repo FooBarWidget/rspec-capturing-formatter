@@ -34,7 +34,7 @@ The source label is selected before rendering:
 - `suite stdout` and `suite stderr` outside an example;
 - `rspec` for formatter messages from RSpec itself.
 
-Every physical captured line has two spaces, its source label, ` | `, and the payload. With formatter color enabled, stdout and suite-stdout prefixes use gray, while stderr and suite-stderr prefixes use yellow. The payload is not wrapped in formatter color, so application SGR sequences remain unchanged. A newline-terminated chunk does not leave a dangling prefix. A partial chunk is still written immediately and is completed at the next boundary.
+Every physical captured line has two spaces, its source label, ` | `, and the payload. With formatter color enabled, stdout and suite-stdout lines use gray, while stderr and suite-stderr lines use yellow. Plain captured payload is styled with the source color. If a capture stream emits an application SGR sequence, its payload remains unwrapped for the rest of that capture entry so later formatter styling cannot overwrite application styling. A newline-terminated chunk does not leave a dangling prefix. A partial chunk is still written immediately and is completed at the next boundary.
 
 ## Results and timing
 
