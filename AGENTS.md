@@ -2,17 +2,62 @@ This is the codebase for the rspec-better-formatter gem: keeps test progress rea
 
 # General principles
 
-- Source of truth: treat @./README.md as the public behavior contract.
+- Before starting work, read the table of contents in `./devdocs/README.md` to discover available developer documentation. Read relevant documents as needed for the task.
+- Source of truth: treat `./README.md` as the public behavior contract.
 - Prioritize Windows compatibility, append-only output, and one human-readable formatter per stream.
-- Documentation/comments writing style:
-  - Use sentence case for all headings and subheadings, not title case
-  - Use ASD-STE100 Simplified Technical English
+
+## General coding guidelines
+
+- Prefer boring, explicit code over cleverness or premature abstraction. Keep the main code path easy to follow and centered on business logic; move incidental technical or secondary details into helpers when they obscure that flow. Some duplication is fine. Extract shared abstractions only when they clearly improve readability or eliminate substantial duplication, and avoid speculative generalization.
+- Proper error handling
+  - Shell scripts: use pipefail
+  - When ignoring errors, only ignore specific errors, not blanket ignore all errors
+- Strategically use comments to:
+  - Explain complicated algorithms in high-level manner. Goal: aid human readability.
+  - Document caveats and non-obvious decisions.
+
+# Escalation policy
+
+Optimize for the underlying goal, not literal compliance. Continuously check whether requests, requirements, contracts, constraints, and assumptions actually make sense. If you discover a medium/high-impact ambiguity, contradiction, bad assumption, or strategic/design problem, do not work around it or silently choose an interpretation: surface it and discuss it with me first. The later you discover the issue, the more important it is to reconsider the plan rather than defend work already done.
+
+Use judgment to handle low-impact problems autonomously and mention noteworthy ones afterward.
+
+# Documents/comments writing style
+
+- Use sentence case for all headings and subheadings, not title case
+- Use ASD-STE100 Simplified Technical English
+- Documents: don't cap line widths
 
 # Testing
 
 - Test with `bundle exec rspec`
 - Test specific RSpec version compatibility with `BUNDLE_GEMFILE=gemfiles/rspec_*.gemfile bundle exec rspec`
 - The native `cmd.exe` quoting test is intentionally skipped off Windows; do not treat a Linux pass as Windows verification
+
+## Testability (not for shell scripts)
+
+- Keep core logic independently unit testable; isolate side effects and external interactions where practical.
+- Add tests for significant behavioral changes and bug fixes. Prefer red/green testing.
+
+# Developer handbook maintenance
+
+After material changes, update the developer handbook (`devdocs/`) as part of the same change. Change is material when it affects or invalidates documented architecture, flows, concepts, constraints, design decisions, patterns, or major subsystems.
+
+Purposes of the handbook:
+
+- Teaches a human and AI developer how this codebase works so that they can contribute effectively. For AI, the handbook functions as a series of skills, with an index functioning as a skill router.
+- Documents important design decisions, rationale and constraints so they don't get lost or become implicit.
+
+Content coverage:
+
+- Overall architecture and/or flow
+- Major concepts and constraints
+- Major design patterns where non-obvious
+- Major or non-obvious design decisions
+- Major subsystems
+- Omit obvious/trivial information, focus on important things
+- Minimize/omit information already in public user docs. The handbook assumes the reader has adequate user-facing knowledge of the project.
+- `devdocs/README.md` is to be the table of contents file, linking to everything else, with concise & keyword-heavy descriptions. For AI, this functions like a lightweight skill router.
 
 # Implementation constraints
 
