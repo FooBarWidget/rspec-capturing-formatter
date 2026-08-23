@@ -14,7 +14,7 @@ The capture manager is the boundary between Ruby IO behavior and formatter behav
 - pending nonblocking writes;
 - a reentrant `Monitor` for all manager and formatter operations.
 
-The manager uses a lease for every activation. An owning lease records the activation generation. A formatter with the same destination can receive a non-owning lease, but a different concurrent destination is rejected. A stale owning lease cannot deactivate a later generation.
+The manager uses an owning lease for every activation. Only one formatter can be active at a time; every concurrent activation is rejected, including one using the same destination. The lease records the activation generation, so a stale owning lease cannot deactivate a later generation.
 
 `stop` and `close` are safe to call more than once. After deactivation, the retained proxies enter raw mode. Old logger instances and threads can continue to write through them after the globals have been restored. A later run can activate the same manager again.
 

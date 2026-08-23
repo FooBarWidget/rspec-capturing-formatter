@@ -47,16 +47,15 @@ module RSpec
       end
 
       def activate(output, formatter)
-        existing = @monitor.synchronize { active_lease(output) }
+        existing = @monitor.synchronize { active_lease }
         return existing if existing
 
         install!
         @monitor.synchronize do
-          existing = active_lease(output)
+          existing = active_lease
           return existing if existing
 
           begin
-            @output = output
             @formatter = formatter
             @active = true
             @generation += 1
@@ -65,7 +64,6 @@ module RSpec
             Lease.new(manager: self, owner: true, generation: @generation)
           rescue Exception
             @active = false
-            @output = nil
             @formatter = nil
             @stdout_proxy.deactivate!
             @stderr_proxy.deactivate!
@@ -141,7 +139,6 @@ module RSpec
           ensure
             @active = false
             @formatter = nil
-            @output = nil
             @pending_nonblock.clear
             @stdout_proxy.deactivate!
             @stderr_proxy.deactivate!
@@ -154,7 +151,6 @@ module RSpec
         @monitor.synchronize do
           @active = false
           @formatter = nil
-          @output = nil
           @pending_nonblock.clear
           @stdout_proxy&.deactivate!
           @stderr_proxy&.deactivate!
@@ -180,9 +176,8 @@ module RSpec
         method == :write_nonblock || method == :syswrite
       end
 
-      def active_lease(output)
+      def active_lease
         return unless @active
-        return Lease.new(manager: self, owner: false, generation: @generation) if @output.equal?(output)
 
         raise "another RSpec::BetterFormatter is already active"
       end

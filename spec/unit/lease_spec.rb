@@ -20,6 +20,19 @@ RSpec.describe RSpec::BetterFormatter::CaptureManager do
     expect(manager).not_to be_active
   end
 
+  it "rejects a concurrent activation with the same output destination" do
+    manager = described_class.new
+    output = StringIO.new
+    formatter = double(:formatter, finish_capture: nil)
+
+    manager.activate(output, formatter)
+
+    expect { manager.activate(output, formatter) }.
+      to raise_error("another RSpec::BetterFormatter is already active")
+  ensure
+    manager&.restore!
+  end
+
   it "rolls back proxy installation when activation fails" do
     original_stdout = $stdout
     original_stderr = $stderr
