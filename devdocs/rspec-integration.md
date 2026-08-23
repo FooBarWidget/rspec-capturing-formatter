@@ -36,8 +36,6 @@ Expected failures can include the failure presenter output. The effective `pendi
 - `:no_backtrace` removes backtrace lines;
 - `:skip` omits expected-failure details.
 
-RSpec 3.12 does not provide this setting. Requiring the formatter adds a narrow shim to `RSpec::Core::Configuration` with the same three values. It does not replace RSpec's presenters or change unrelated RSpec behavior.
-
 ## Failures and reruns
 
 For a failed example, the formatter renders the result, inline rerun command, and presenter lines during `example_failed`. It asks RSpec for `fully_formatted_lines` when available and supplies a formatter-owned colorizer. This preserves RSpec's source extraction, aggregate failure numbering, shared-example traces, filtered backtraces, and extra failure lines.

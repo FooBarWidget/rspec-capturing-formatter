@@ -97,6 +97,7 @@ RSpec::BetterFormatter.configure do |config|
   config.separator = " › "
   config.color = true
   config.emoji = :auto       # :auto, true, or false
+  config.pending_failure_output = :full # :full, :no_backtrace, or :skip
 end
 ```
 
@@ -128,9 +129,7 @@ Valid text is transcoded for the report destination. Invalid or binary bytes tha
 
 ## Example Results
 
-Passed, failed, pending, and skipped examples receive distinct status markers. Pending and skipped examples share the final `pending` count. An example that was marked pending but unexpectedly passes is an RSpec failure and is reported as failed. Pending and skipped statuses include their reason and rerun location. Expected-failure details honor RSpec's `pending_failure_output` setting and are shown inline rather than duplicated in an end-of-run pending section.
-
-On RSpec 3.12, which does not provide that setting itself, requiring the formatter adds the same `:full`, `:no_backtrace`, and `:skip` configuration API for formatter use.
+Passed, failed, pending, and skipped examples receive distinct status markers. Pending and skipped examples share the final `pending` count. An example that was marked pending but unexpectedly passes is an RSpec failure and is reported as failed. Pending and skipped statuses include their reason and rerun location. Expected-failure details honor RSpec's native `pending_failure_output` setting when available, or the formatter setting above on older RSpec versions. They are shown inline rather than duplicated in an end-of-run pending section.
 
 Durations are printed next to results whose run time meets `slow_threshold`. The suite summary always includes total run time and spec loading time.
 

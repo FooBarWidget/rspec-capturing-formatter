@@ -8,24 +8,6 @@ require_relative "better_formatter/stream_proxy"
 require_relative "better_formatter/renderer"
 require_relative "better_formatter/windows_command_line"
 
-unless RSpec::Core::Configuration.method_defined?(:pending_failure_output)
-  RSpec::Core::Configuration.class_eval do
-    # RSpec 3.12 has no pending failure output setting. Keep the formatter's
-    # supported setting available without changing RSpec's own presenters.
-    def pending_failure_output
-      @better_formatter_pending_failure_output ||= :full
-    end
-
-    def pending_failure_output=(value)
-      unless [:full, :no_backtrace, :skip].include?(value)
-        raise ArgumentError, "pending_failure_output must be :full, :no_backtrace, or :skip"
-      end
-
-      @better_formatter_pending_failure_output = value
-    end
-  end
-end
-
 module RSpec
   class BetterFormatter
     class << self
@@ -286,8 +268,10 @@ module RSpec
     end
 
     def pending_failure_output
-      return :full unless defined?(RSpec) && RSpec.respond_to?(:configuration) &&
-        RSpec.configuration.respond_to?(:pending_failure_output)
+      configuration = self.class.configuration
+      return configuration.pending_failure_output if configuration.pending_failure_output_configured?
+      return configuration.pending_failure_output unless defined?(RSpec) &&
+        RSpec.respond_to?(:configuration) && RSpec.configuration.respond_to?(:pending_failure_output)
 
       RSpec.configuration.pending_failure_output
     end

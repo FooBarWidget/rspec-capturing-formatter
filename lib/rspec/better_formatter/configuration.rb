@@ -8,6 +8,7 @@ module RSpec
         @separator = " › "
         @color = true
         @emoji = :auto
+        @pending_failure_output = nil
       end
 
       def slow_threshold=(value)
@@ -42,12 +43,29 @@ module RSpec
         @emoji = value
       end
 
+      def pending_failure_output=(value)
+        unless [:full, :no_backtrace, :skip].include?(value)
+          raise ArgumentError, "pending_failure_output must be :full, :no_backtrace, or :skip"
+        end
+
+        @pending_failure_output = value
+      end
+
+      def pending_failure_output
+        @pending_failure_output || :full
+      end
+
+      def pending_failure_output_configured?
+        !@pending_failure_output.nil?
+      end
+
       def to_h
         {
           slow_threshold: @slow_threshold,
           separator: @separator,
           color: @color,
-          emoji: @emoji
+          emoji: @emoji,
+          pending_failure_output: pending_failure_output
         }
       end
     end

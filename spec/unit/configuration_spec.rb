@@ -8,6 +8,7 @@ RSpec.describe RSpec::BetterFormatter::Configuration do
     expect(configuration.separator).to eq(" › ")
     expect(configuration.color).to be(true)
     expect(configuration.emoji).to eq(:auto)
+    expect(configuration.pending_failure_output).to eq(:full)
   end
 
   it "validates settings" do
@@ -16,6 +17,7 @@ RSpec.describe RSpec::BetterFormatter::Configuration do
     expect { configuration.separator = "" }.to raise_error(ArgumentError)
     expect { configuration.color = :yes }.to raise_error(ArgumentError)
     expect { configuration.emoji = :sometimes }.to raise_error(ArgumentError)
+    expect { configuration.pending_failure_output = :sometimes }.to raise_error(ArgumentError)
   end
 
   it "accepts valid settings" do
@@ -23,9 +25,11 @@ RSpec.describe RSpec::BetterFormatter::Configuration do
     configuration.separator = " / "
     configuration.color = false
     configuration.emoji = false
+    configuration.pending_failure_output = :skip
 
     expect(configuration.to_h).to eq(
-      slow_threshold: nil, separator: " / ", color: false, emoji: false
+      slow_threshold: nil, separator: " / ", color: false, emoji: false,
+      pending_failure_output: :skip
     )
   end
 end
