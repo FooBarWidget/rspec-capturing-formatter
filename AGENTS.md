@@ -3,7 +3,7 @@ This is the codebase for the rspec-better-formatter gem: keeps test progress rea
 # General principles
 
 - Before starting work, read the table of contents in `./devdocs/README.md` to discover available developer documentation. Read relevant documents as needed for the task.
-- Source of truth: treat `./README.md` (public user docs) as the public behavior contract.
+- `README.md` is curated user documentation: defines public commitments without listing every behavior.
 - Prioritize Windows compatibility, append-only output, and one human-readable formatter per stream.
 
 ## General coding guidelines
@@ -28,6 +28,7 @@ Use judgment to handle low-impact problems autonomously and mention noteworthy o
 - Use sentence case for all headings and subheadings, not title case
 - Use ASD-STE100 Simplified Technical English
 - Documents: don't cap line widths
+- Omit repetitive explanations
 - User-facing documents: avoid references to internals, focus on public contract and behavior
 
 # Testing

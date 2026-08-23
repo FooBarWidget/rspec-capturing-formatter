@@ -1,10 +1,8 @@
 # rspec-better-formatter
 
-`rspec-better-formatter` is an RSpec formatter that keeps test progress readable when examples write logs to stdout or stderr.
+`rspec-better-formatter` is an RSpec formatter that keeps test progress readable when examples write logs to stdout or stderr. This is especially helpful in CI, where interleaved output can make it difficult to tell which example produced a particular log message. By keeping output clearly associated with the example that produced it, the formatter makes failures easier to understand and debug.
 
-It streams logs as they happen, labels their source, and prints the complete RSpec nesting path before each example. Its output is append-only: it does not use carriage-return progress, cursor movement, or other terminal rewriting, so the same report works in a terminal and in CI logs.
-
-## Example
+Example:
 
 ```text
 A car › it is red
@@ -44,26 +42,6 @@ Failed examples
 
 Color and emphasis are omitted from this example. Actual output uses color and emoji when supported.
 
-## Features
-
-- Streams stdout and stderr in real time with a label on every physical line.
-- Shows the full group, context, and example path, separated by `›` by default.
-- Reports progress when an example starts and its result when it finishes.
-- Attributes `before`, `after`, and `around` example-hook output to the example.
-- Gives context and suite-hook output a clear location without inventing an example attribution.
-- Prints complete failures inline, including RSpec source snippets, aggregate failures, filtered backtraces, and `extra_failure_lines` metadata.
-- Shows the duration of examples taking at least 500 ms by default.
-- Prints reconciled totals for all, succeeded, failed, and pending examples.
-- Preserves standard RSpec information such as deprecations, profile output, errors outside examples, and the random seed.
-- Uses color by default in TTY and non-TTY output, while respecting `NO_COLOR` and RSpec's explicit `--no-color` option.
-- Uses emoji where the output encoding supports it and readable ASCII symbols otherwise.
-- Neutralizes cursor movement and erase controls in captured data.
-- Works on Windows as well as POSIX platforms.
-
-## Requirements
-
-- `rspec-core` >= 3.12
-
 ## Usage
 
 Add the formatter to `.rspec`:
@@ -81,11 +59,10 @@ Use this as the sole human-readable console formatter. Machine formatters may st
 
 ```sh
 bundle exec rspec \
+  --require rspec/better_formatter \
   --format RSpec::BetterFormatter \
   --format json --out tmp/rspec.json
 ```
-
-When the better formatter itself is sent to a file with RSpec's `--out`, the captured stdout and stderr are included in that file as part of the report.
 
 ## Configuration
 
@@ -101,57 +78,12 @@ RSpec::BetterFormatter.configure do |config|
 end
 ```
 
-`NO_COLOR` takes precedence when it exists and is non-empty. RSpec's explicit `--no-color` option also takes precedence. Automatic non-TTY detection does not disable color because CI-friendly color is a formatter default.
+When `config.color == true`, coloring is enabled even when there is no TTY. Coloring is always disabled when `NO_COLOR` or when RSpec's `--no-color` option is set.
 
-These settings control formatter-generated styling. Captured applications remain responsible for honoring `NO_COLOR` themselves.
+## Output capture limitations
 
-## Output attribution
+The formatter captures writes made through `$stdout` and `$stderr` after the formatter is loaded. This includes calls to bare `puts`, `print`, `warn`, and calls to typical Ruby `Logger` instances that log to stdout or stderr.
 
-While an example is active, writes through `$stdout` or `$stderr` are attributed to that example and emitted as `stdout |` or `stderr |`.
+This formatter does not capture direct native writes to file descriptors 1 or 2, or output written by subprocesses.
 
-Output from `before(:context)` and `after(:context)` hooks is emitted as `suite stdout |` or `suite stderr |` when no example is active. If no example or earlier hook output has made that context visible, the full context path is printed first.
-
-Output from `before(:suite)` and `after(:suite)` uses the same suite labels. A leading `RSpec suite` heading is printed when suite output is the first visible entry in the report. Example, context-hook, and suite-hook entries are separated by exactly one empty line.
-
-Top-level output produced while loading spec files after the formatter is required is also suite output. Writes made before the formatter is required pass through unchanged.
-
-Capture ends after RSpec completes its suite hooks. Writes from lingering threads or `at_exit` handlers after that point pass through unchanged.
-
-Threads that write while an example is active are attributed to that example. Writes arriving after the example finishes use the current context or suite attribution. Writes are synchronized, but an exact chronological ordering between concurrently written stdout and stderr chunks cannot be guaranteed. RSpec messages raised during an example are shown inline as `rspec |` lines, without changing the attribution of later example output.
-
-## Stream handling
-
-Newline-terminated and partial writes are flushed immediately. If stderr starts writing while an unterminated stdout line is open, the formatter terminates the display line and starts a separately labeled stderr line. It never merges data from different streams onto one report line.
-
-CRLF is normalized to a newline, and a lone carriage return becomes a stable line boundary. ANSI color sequences in application output are preserved. Terminal-control sequences such as cursor movement, line erasure, and backspace are rendered harmlessly rather than executed. Formatter styling is reset at report boundaries so application colors cannot bleed into statuses or summaries.
-
-Valid text is transcoded for the report destination. Invalid or binary bytes that cannot be represented safely are shown as escaped byte values instead of crashing the run or being silently discarded.
-
-## Example results
-
-Passed, failed, pending, and skipped examples receive distinct status markers. Pending and skipped examples share the final `pending` count. An example that was marked pending but unexpectedly passes is an RSpec failure and is reported as failed. Pending and skipped statuses include their reason and rerun location. Expected-failure details honor RSpec's native `pending_failure_output` setting when available, or the formatter setting above on older RSpec versions. They are shown inline rather than duplicated in an end-of-run pending section.
-
-Durations are printed next to results whose run time meets `slow_threshold`. The suite summary always includes total run time and spec loading time.
-
-Failures are printed immediately below their examples. Failure output includes source extraction, compound exceptions, aggregate failures, shared-example traces, filtered backtraces, and `example.metadata[:extra_failure_lines]`. A short rerun list is repeated at the end.
-
-Deprecation output follows RSpec's configured deprecation behavior. Its exact layout and styling depend on the installed RSpec version.
-
-Errors raised outside examples are reported by RSpec, counted separately in the summary, and make the run unsuccessful.
-
-## Capture boundaries
-
-The formatter captures writes made through `$stdout` and `$stderr` after it is required. This includes `puts`, `print`, `warn`, and typical Ruby `Logger` instances created with one of those globals after the formatter was required.
-
-It does not promise to capture:
-
-- `STDOUT`, `STDERR`, or another output reference retained before the formatter was required
-- direct native writes to file descriptors 1 or 2
-- stdout or stderr inherited by subprocesses
-- output intentionally consumed by another capture tool or RSpec's `output` matcher
-
-RSpec's `to_stdout_from_any_process` and `to_stderr_from_any_process` matchers must continue to work; output captured by those matchers is not duplicated in the formatter report.
-
-RSpec Core runs examples sequentially. Same-process parallel example runners are unsupported because the formatter cannot reliably assign simultaneous stdout and stderr writes to individual examples. Multi-process runners may be used, but the runner is responsible for keeping each process's report together.
-
-Using another human-readable formatter on the same output stream can duplicate progress or make that formatter's direct writes look like test output. Use separate files for additional formatters.
+Same-process parallel example runners are unsupported because the formatter cannot reliably assign simultaneous stdout and stderr writes to individual examples. Multi-process runners may be used, but the runner is responsible for keeping each process's report together.

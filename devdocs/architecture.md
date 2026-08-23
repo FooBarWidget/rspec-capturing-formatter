@@ -13,7 +13,7 @@ The runtime is split into these components:
 - `StreamProxy` in `stream_proxy.rb` presents a writable-IO surface and routes writes either to capture or to its backing stream.
 - `Renderer` in `renderer.rb` owns report entries, spacing, prefixes, status lines, failures, summaries, encoding, and flushes.
 - `Sanitizer` in `sanitizer.rb` converts captured bytes into safe UTF-8 report text while retaining state across writes.
-- `Configuration` in `configuration.rb` validates the four formatter settings.
+- `Configuration` in `configuration.rb` validates the five formatter settings.
 - `WindowsCommandLine` creates pasteable Windows rerun arguments.
 
 The capture manager is process-global. Each formatter instance has its own renderer. The manager routes captured writes only to the formatter that owns the active lease, and can activate only one formatter instance at a time.
@@ -56,10 +56,11 @@ RSpec::BetterFormatter.configure do |config|
   config.separator = " › "
   config.color = true
   config.emoji = :auto
+  config.pending_failure_output = :full
 end
 ```
 
-The defaults are `0.5`, `" › "`, `true`, and `:auto`. `slow_threshold` accepts a non-negative number or `nil`; `separator` must be non-empty; `color` must be a boolean; and `emoji` must be `:auto`, `true`, or `false`.
+The defaults are `0.5`, `" › "`, `true`, `:auto`, and `:full`. `slow_threshold` accepts a non-negative number or `nil`; `separator` must be non-empty; `color` must be a boolean; `emoji` must be `:auto`, `true`, or `false`; and `pending_failure_output` must be `:full`, `:no_backtrace`, or `:skip`.
 
 The formatter stores the configuration object, not a copy of its values. `Renderer` reads the settings while rendering. This is required because a spec helper or a loaded spec file can configure the formatter after RSpec has constructed it.
 
