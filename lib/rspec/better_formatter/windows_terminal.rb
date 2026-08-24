@@ -13,7 +13,7 @@ module RSpec
       class << self
         def ansi_supported?(output, platform: Gem.win_platform?, env: ENV, api: nil)
           return true unless platform
-          
+
           begin
             return true unless tty?(output)
             return false unless windows_terminal?(env)
@@ -76,7 +76,7 @@ module RSpec
 
         def std_handle(output)
           source = output.source if output.respond_to?(:source)
-          source == :stderr ? STD_ERROR_HANDLE : STD_OUTPUT_HANDLE
+          (source == :stderr) ? STD_ERROR_HANDLE : STD_OUTPUT_HANDLE
         end
       end
     end

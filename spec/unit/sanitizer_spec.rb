@@ -50,7 +50,7 @@ RSpec.describe RSpec::BetterFormatter::Sanitizer do
     expect(utf8.process("aé".encode("UTF-8").byteslice(0, 2))).to eq("a")
     expect(utf8.process("é".encode("UTF-8").byteslice(1, 1))).to eq("é")
 
-    utf16 = described_class.new
+    described_class.new
     value = "😀".encode("UTF-16LE")
     (0...value.bytesize).each do |split|
       decoder = described_class.new
@@ -179,7 +179,6 @@ RSpec.describe RSpec::BetterFormatter::Sanitizer do
     expect(sanitizer.process("x\e[ 31my")).to eq("x\\e[ 31my")
     expect(sanitizer.process("x\e[?25my")).to eq("x\\e[?25my")
   end
-
 
   it "escapes ESC before Unicode without corrupting the character" do
     sanitizer = described_class.new

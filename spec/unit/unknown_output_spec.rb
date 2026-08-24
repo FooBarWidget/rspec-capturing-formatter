@@ -1,6 +1,8 @@
 require "spec_helper"
 
 RSpec.describe RSpec::BetterFormatter::Renderer do
+  # Keep this test double scoped to the example group.
+  # standard:disable Lint/ConstantDefinitionInBlock
   class AsciiOnlyOutput
     attr_reader :value
 
@@ -19,6 +21,7 @@ RSpec.describe RSpec::BetterFormatter::Renderer do
       self
     end
   end
+  # standard:enable Lint/ConstantDefinitionInBlock
 
   it "falls back to visible byte escapes for writers without encoding metadata" do
     output = AsciiOnlyOutput.new

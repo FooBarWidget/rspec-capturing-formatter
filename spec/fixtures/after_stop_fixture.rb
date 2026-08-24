@@ -1,5 +1,5 @@
 RSpec.describe "shutdown output" do
-  it("passes") { }
+  it("passes") {}
 end
 
 at_exit do

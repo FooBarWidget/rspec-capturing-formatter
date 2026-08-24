@@ -202,7 +202,7 @@ module RSpec
             return [output.force_encoding(Encoding::UTF_8), +""]
           end
         end
-      rescue EncodingError, Encoding::ConverterNotFoundError
+      rescue EncodingError
         [escape_bytes(bytes), +""]
       end
 
@@ -283,10 +283,10 @@ module RSpec
               break
             end
 
-            if sgr_sequence?(sequence)
-              output << sequence
+            output << if sgr_sequence?(sequence)
+              sequence
             else
-              output << visible_escape(sequence)
+              visible_escape(sequence)
             end
             index += consumed
             next
@@ -302,10 +302,10 @@ module RSpec
             output << character
           else
             codepoint = character.ord
-            if codepoint < 0x20 || codepoint == 0x7F || codepoint.between?(0x80, 0x9F)
-              output << format("\\x%02X", codepoint)
+            output << if codepoint < 0x20 || codepoint == 0x7F || codepoint.between?(0x80, 0x9F)
+              format("\\x%02X", codepoint)
             else
-              output << character
+              character
             end
           end
           index += character_bytes

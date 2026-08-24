@@ -6,7 +6,10 @@ module RSpec
   class BetterFormatter
     # Coordinates process-global stream proxies, formatter leases, synchronized writes, and bypass state.
     class CaptureManager
+      # Keep keyword construction explicit for older supported Ruby runtimes.
+      # standard:disable Style/RedundantStructKeywordInit
       Lease = Struct.new(:manager, :owner, :generation, keyword_init: true) do
+        # standard:enable Style/RedundantStructKeywordInit
         def owner?
           owner
         end
@@ -64,7 +67,10 @@ module RSpec
             @stdout_proxy.activate!
             @stderr_proxy.activate!
             Lease.new(manager: self, owner: true, generation: @generation)
+          # Restore the proxies even when activation fails with a non-standard exception.
+          # standard:disable Lint/RescueException
           rescue Exception
+            # standard:enable Lint/RescueException
             @active = false
             @formatter = nil
             @stdout_proxy.deactivate!
@@ -208,7 +214,7 @@ module RSpec
         @manager.synchronize do
           @backing = begin
             other.backing.dup
-          rescue StandardError
+          rescue
             other.backing
           end
           @raw_mode = other.raw_mode?
@@ -220,13 +226,9 @@ module RSpec
         @raw_mode
       end
 
-      def manager
-        @manager
-      end
+      attr_reader :manager
 
-      def backing
-        @backing
-      end
+      attr_reader :backing
 
       def activate!
         @raw_mode = false
@@ -320,7 +322,7 @@ module RSpec
       def tty?
         @backing.respond_to?(:tty?) && @backing.tty?
       end
-      alias isatty tty?
+      alias_method :isatty, :tty?
 
       def closed?
         @closed || (@backing.respond_to?(:closed?) && @backing.closed?)

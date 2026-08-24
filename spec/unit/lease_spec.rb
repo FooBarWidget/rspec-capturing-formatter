@@ -27,8 +27,8 @@ RSpec.describe RSpec::BetterFormatter::CaptureManager do
 
     manager.activate(output, formatter)
 
-    expect { manager.activate(output, formatter) }.
-      to raise_error("another RSpec::BetterFormatter is already active")
+    expect { manager.activate(output, formatter) }
+      .to raise_error("another RSpec::BetterFormatter is already active")
   ensure
     manager&.restore!
   end

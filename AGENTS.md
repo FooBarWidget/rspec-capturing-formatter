@@ -17,6 +17,8 @@ This is the codebase for the rspec-better-formatter gem: keeps test progress rea
   - Use concise comments to explain non-obvious why: algorithms, invariants, caveats, and local design decisions. Avoid narrating straightforward code.
   - Important classes/modules should briefly state their responsibility when not obvious.
   - Keep comments local and short. Broader architecture, substantial rationale, or complex/cross-cutting caveats belong in the developer handbook; comments may summarize and link to it.
+- Ruby:
+  - Use Standard Ruby
 
 # Escalation policy
 
@@ -37,6 +39,7 @@ Use judgment to handle low-impact problems autonomously and mention noteworthy o
   - Test specific RSpec version compatibility: `bundle exec rake spec BUNDLE_GEMFILE=gemfiles/rspec_*.gemfile`
   - Test specific spec file: `bundle exec rake spec FILE=spec/unit/lease_spec.rb:23`
   - Test specific example: `bundle exec rake spec EXAMPLE=EAGAIN` (passed to `rspec -e`)
+- Test Standard Ruby conformance: `bundle exec standardrb`
 - The native `cmd.exe` quoting test is intentionally skipped off Windows; do not treat a Linux pass as Windows verification
 
 ## Testability (not for shell scripts)

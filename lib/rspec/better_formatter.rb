@@ -44,7 +44,10 @@ module RSpec
       @failed_reruns = []
       @seed_notification = nil
       @lease = @manager.activate(output, self)
+    # Roll back global state even when construction fails with a non-standard exception.
+    # standard:disable Lint/RescueException
     rescue Exception
+      # standard:enable Lint/RescueException
       if defined?(@lease) && @lease
         @manager.deactivate(@lease)
       elsif @manager && !manager_was_active
@@ -143,7 +146,7 @@ module RSpec
           errors: notification.errors_outside_of_examples_count
         )
         @renderer.reruns(@failed_reruns.uniq)
-        if @seed_notification && @seed_notification.respond_to?(:seed_used?) && @seed_notification.seed_used?
+        if @seed_notification&.respond_to?(:seed_used?) && @seed_notification.seed_used?
           @renderer.seed(@seed_notification.seed)
         end
       end
@@ -163,7 +166,7 @@ module RSpec
           @renderer.capture(source.to_s, value, encoding)
         else
           ensure_suite_or_context
-          label = source == :stdout ? "suite stdout" : "suite stderr"
+          label = (source == :stdout) ? "suite stdout" : "suite stderr"
           @renderer.capture(label, value, encoding)
         end
       end
@@ -254,7 +257,7 @@ module RSpec
       duplicate = if defined?(RSpec.world) && RSpec.world.respond_to?(:all_examples)
         RSpec.world.all_examples.count { |item| item.location_rerun_argument == location } > 1
       end
-      duplicate && example.respond_to?(:id) ? example.id : location
+      (duplicate && example.respond_to?(:id)) ? example.id : location
     end
 
     def shell_escape(value)
@@ -286,7 +289,6 @@ module RSpec
     def strip_ansi(value)
       value.gsub(/\e\[[0-?]*[ -\/]*[@-~]/, "")
     end
-
   end
 
   BetterFormatter::CaptureManager.install!

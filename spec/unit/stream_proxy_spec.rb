@@ -2,6 +2,8 @@ require "spec_helper"
 require "stringio"
 
 RSpec.describe RSpec::BetterFormatter::StreamProxy do
+  # Keep these test doubles scoped to the example group.
+  # standard:disable Lint/ConstantDefinitionInBlock
   class PassthroughManager
     def handle_write(proxy, value, method = :write, **options)
       proxy.write_backing(value, method, **options)
@@ -37,6 +39,7 @@ RSpec.describe RSpec::BetterFormatter::StreamProxy do
       value.bytesize - 2
     end
   end
+  # standard:enable Lint/ConstantDefinitionInBlock
 
   let(:manager) { PassthroughManager.new }
   let(:backing) { StringIO.new }

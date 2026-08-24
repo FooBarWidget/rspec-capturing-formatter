@@ -291,29 +291,25 @@ module RSpec
           end
           written = @pending_output.bytesize if written.nil?
           remaining = @pending_output.byteslice(written..)
-          @pending_output = remaining && !remaining.empty? ? remaining : nil
+          @pending_output = (remaining && !remaining.empty?) ? remaining : nil
         end
         @output.flush if @output.respond_to?(:flush)
       end
 
       def write_pending_chunk
-        begin
-          if @output.respond_to?(:write_nonblock)
-            written = @output.write_nonblock(@pending_output)
-            raise Errno::EAGAIN if written == :wait_writable
+        if @output.respond_to?(:write_nonblock)
+          written = @output.write_nonblock(@pending_output)
+          raise Errno::EAGAIN if written == :wait_writable
 
-            written
-          else
-            @output.write(@pending_output)
-          end
-        rescue EncodingError, ArgumentError
-          raise if @pending_output.ascii_only?
-
-          @pending_output = ascii_fallback(@pending_output)
-          retry
+          written
+        else
+          @output.write(@pending_output)
         end
-      rescue IO::WaitWritable, Errno::EAGAIN
-        raise
+      rescue EncodingError, ArgumentError
+        raise if @pending_output.ascii_only?
+
+        @pending_output = ascii_fallback(@pending_output)
+        retry
       end
 
       def encode_for_output(value)
@@ -326,11 +322,9 @@ module RSpec
           value.encode(encoding)
         rescue EncodingError, TypeError
           fallback = value.each_char.map do |character|
-            begin
-              character.encode(encoding).encode(Encoding::UTF_8)
-            rescue EncodingError, TypeError
-              character.bytesize == 1 ? format("\\x%02X", character.getbyte(0)) : format("\\u{%X}", character.ord)
-            end
+            character.encode(encoding).encode(Encoding::UTF_8)
+          rescue EncodingError, TypeError
+            (character.bytesize == 1) ? format("\\x%02X", character.getbyte(0)) : format("\\u{%X}", character.ord)
           end.join
           fallback.encode(encoding)
         end
@@ -354,7 +348,7 @@ module RSpec
 
       def ascii_fallback(value)
         value.bytes.map do |byte|
-          byte == 9 || byte == 10 || byte == 13 || byte.between?(0x20, 0x7E) ? byte.chr : format("\\x%02X", byte)
+          (byte == 9 || byte == 10 || byte == 13 || byte.between?(0x20, 0x7E)) ? byte.chr : format("\\x%02X", byte)
         end.join
       end
 
@@ -415,7 +409,7 @@ module RSpec
 
       def format_seconds(value)
         seconds = value.to_f
-        seconds < 1 ? format("%.0f ms", seconds * 1000) : format("%.2f s", seconds)
+        (seconds < 1) ? format("%.0f ms", seconds * 1000) : format("%.2f s", seconds)
       end
 
       def format_milliseconds(value)

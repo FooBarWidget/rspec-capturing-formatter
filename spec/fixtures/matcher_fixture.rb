@@ -7,7 +7,7 @@ RSpec.describe "stream matchers" do
   it "captures output from the current process" do
     expect { $stdout.puts "raw normal" }.to output("raw normal\n").to_stdout
     expect { $stdout.puts "raw stdout" }.to output("raw stdout\n").to_stdout_from_any_process
-    expect { $stderr.puts "raw stderr" }.to output("raw stderr\n").to_stderr_from_any_process
+    expect { warn "raw stderr" }.to output("raw stderr\n").to_stderr_from_any_process
     expect {
       system(RbConfig.ruby, "-e", "STDOUT.write('raw child\n')")
     }.to output("raw child\n").to_stdout_from_any_process

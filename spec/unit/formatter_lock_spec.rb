@@ -1,6 +1,8 @@
 require "spec_helper"
 
 RSpec.describe RSpec::BetterFormatter do
+  # Keep these test doubles scoped to the example group.
+  # standard:disable Lint/ConstantDefinitionInBlock
   ExampleResult = Struct.new(:run_time)
   Example = Struct.new(:execution_result)
   Notification = Struct.new(:example)
@@ -99,6 +101,7 @@ RSpec.describe RSpec::BetterFormatter do
       @value
     end
   end
+  # standard:enable Lint/ConstantDefinitionInBlock
 
   it "does not let a result split a captured prefix from its payload" do
     configuration = described_class.configuration

@@ -14,7 +14,8 @@ module RSpec
       end
 
       def slow_threshold=(value)
-        unless value.nil? || (value.is_a?(Numeric) && value >= 0)
+        valid = value.nil? || (value.is_a?(Numeric) && value >= 0)
+        unless valid
           raise ArgumentError, "slow_threshold must be a non-negative number or nil"
         end
 

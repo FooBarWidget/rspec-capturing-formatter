@@ -4,7 +4,7 @@ RSpec.describe "A car" do
   end
 
   after do
-    $stderr.puts "after hook"
+    warn "after hook"
   end
 
   it "is red" do
@@ -18,6 +18,6 @@ RSpec.describe "A car" do
     raise "test failure"
   end
 
-  it "waits", :skip => "not implemented" do
+  it "waits", skip: "not implemented" do
   end
 end

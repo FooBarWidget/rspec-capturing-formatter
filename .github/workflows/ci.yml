@@ -5,6 +5,18 @@ on:
   pull_request:
 
 jobs:
+  lint:
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+          bundler: default # Share cache with 'test' job
+
+      - run: bundle exec standardrb
+
   test:
     strategy:
       fail-fast: false

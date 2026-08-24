@@ -3,7 +3,7 @@
 module RSpec
   class BetterFormatter
     module WindowsCommandLine
-      CMD_META = "()[]%!^\"`<>&|;, *?\t".freeze
+      CMD_META = "()[]%!^\"`<>&|;, *?\t"
 
       module_function
 

@@ -6,7 +6,7 @@ require "tempfile"
 
 RSpec.describe RSpec::BetterFormatter::WindowsCommandLine do
   it "preserves ordinary backslashes and quotes trailing backslashes correctly" do
-    escaped = described_class.escape(%q{C:\Program Files\specs\car_spec.rb[1:2]})
+    escaped = described_class.escape(%q(C:\Program Files\specs\car_spec.rb[1:2]))
     trailing = described_class.escape("C:\\specs\\")
 
     expect(escaped).to include('C:\Program')
@@ -32,11 +32,11 @@ RSpec.describe RSpec::BetterFormatter::WindowsCommandLine do
       File.write(printer, "require 'json'; STDOUT.write(JSON.generate(ARGV))")
       File.write(launcher, "@echo off\r\n\"#{RbConfig.ruby}\" \"#{printer}\" %*\r\n")
       values = [
-        %q{C:\Program Files\specs\car_spec.rb:2},
+        %q(C:\Program Files\specs\car_spec.rb:2),
         'quote"inside',
         "trailing\\",
-        '%RBF_SENTINEL%',
-        '!RBF_SENTINEL!',
+        "%RBF_SENTINEL%",
+        "!RBF_SENTINEL!",
         'specs\car_spec.rb[1:2]'
       ]
 
