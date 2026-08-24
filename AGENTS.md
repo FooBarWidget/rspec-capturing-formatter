@@ -3,7 +3,7 @@ This is the codebase for the rspec-better-formatter gem: keeps test progress rea
 # General principles
 
 - Before starting work, read the table of contents in `./devdocs/README.md` to discover available developer documentation. Read relevant documents as needed for the task.
-- `README.md` is curated user documentation: defines public commitments without listing every behavior.
+- `README.md` is curated user documentation, not an exhaustive specification.
 - Prioritize Windows compatibility, append-only output, and one human-readable formatter per stream.
 - When picking colors, pick those that are readable in both light and dark themed terminals.
 
@@ -24,13 +24,12 @@ Optimize for the underlying goal, not literal compliance. Continuously check whe
 
 Use judgment to handle low-impact problems autonomously and mention noteworthy ones afterward.
 
-# Documents/comments writing style
+# Documentation style
 
-- Use sentence case for all headings and subheadings, not title case
-- Use ASD-STE100 Simplified Technical English
-- Documents: don't cap line widths
-- Omit repetitive explanations
-- User-facing documents: avoid references to internals, focus on public contract and behavior
+- Use sentence case for headings. Do not cap line widths.
+- Write for a capable developer who is new to this codebase. Explain purpose or constraints before implementation details. Introduce technical terms before using them densely. Prefer concrete subjects and actions. Use examples when they explain behavior more quickly than a list. Include only information that helps a contributor find the correct code, make a decision, or avoid a likely mistake. Leave exhaustive method behavior and minor edge cases to the code and tests. Do not repeat information that an example or an earlier section already makes clear. After drafting, remove every sentence that is merely true but not useful.
+- Keep information that helps readers understand a non-obvious design, find where to make a change, make a decision, or avoid a mistake. Remove repetition and details easily recovered from code or tests.
+- Keep user documentation focused on public setup, behavior, and limitations. Omit internals and exhaustive behavior.
 
 # Testing
 
@@ -45,29 +44,29 @@ Use judgment to handle low-impact problems autonomously and mention noteworthy o
 - Keep core logic independently unit testable; isolate side effects and external interactions where practical.
 - Add tests for significant behavioral changes and bug fixes. Prefer red/green testing.
 
-# Developer handbook maintenance
+# Developer handbook
 
-After material changes, update the developer handbook (`devdocs/`) as part of the same change. Change is material when it affects or invalidates documented architecture, flows, concepts, constraints, design decisions, patterns, or major subsystems.
+The handbook is a series of Markdown files in `devdocs/`. Purposes of the handbook:
 
-Purposes of the handbook:
-
-- Teaches a human and AI developer how this codebase works so that they can contribute effectively. For AI, the handbook functions as a series of skills, with an index functioning as a skill router.
+- Teaches a capable human or AI developer, who does not know this codebase, how this codebase works so that they can contribute effectively. For AI, the handbook functions as a series of skills, with an index functioning as a skill router.
 - Documents important design decisions, rationale and constraints so they don't get lost or become implicit.
 
 Content coverage:
 
 - Overall architecture and/or flow
-- Major concepts and constraints
-- Major design patterns where non-obvious
-- Major or non-obvious design decisions
-- Major subsystems
-- `devdocs/README.md` is to be the table of contents file, linking to everything else, with concise & keyword-heavy descriptions. For AI, this functions like a lightweight skill router.
-- Minimize/omit:
-  - Obvious/trivial information, focus on important things
-  - Info already in public user docs. The handbook assumes the reader has adequate user-facing knowledge of the project.
-  - Info already in `AGENTS.md` and `CONTRIBUTING.md`
+- Important concepts and constraints
+- Important design patterns where non-obvious
+- Important or non-obvious design decisions
+- Important subsystems
 
-Output requirements:
+Writing guidelines (in addition to "Documentation style"):
 
-- One markdown file per major topic. Cross-link where appropriate.
+- Use `devdocs/README.md` as a concise, keyword-rich topic index and skill router.
+- Give each major topic one canonical document and each document one primary topic.
+  - A topic is major when changing it safely requires a distinct mental model because it has its own concepts, constraints, failure modes, platform behavior, or reasons to change. Code-module boundaries alone do not determine document boundaries.
+- When writing an Architecture document, keep it as a map of components, main flows, and system-wide constraints. Summarize and link to canonical topic documents instead of putting subsystem details there.
+- At topic boundaries, explain only the local interaction and link to the canonical document. Do not duplicate the complete policy.
+- Document important rationale and non-obvious design decisions. Omit trivial information and content already covered by user documentation, `AGENTS.md`, or `CONTRIBUTING.md`.
 - Must reflect current behavior rather than idealized goal. If they differ, document the divergence.
+
+Update the handbook in the same change when architecture, flows, major concepts, constraints, patterns, decisions, or subsystems change.
