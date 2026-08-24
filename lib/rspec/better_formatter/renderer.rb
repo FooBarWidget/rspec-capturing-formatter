@@ -13,6 +13,7 @@ module RSpec
         yellow: "\e[33m",
         cyan: "\e[36m",
         gray: "\e[90m",
+        pink: "\e[95m",
         bold: "\e[1m"
       }.freeze
       SOURCE_COLORS = {
@@ -132,10 +133,11 @@ module RSpec
         begin_entry
         @entry_kind = :summary
         @entry_path = nil
+        summary_color = failed.to_i.zero? ? :green : :red
         line(style("Summary", :bold))
-        line("  #{total} total  #{succeeded} succeeded  #{failed} failed  #{pending} pending")
-        line("  Finished in #{format_seconds(duration)}  |  files loaded in #{format_milliseconds(load_time)}")
-        line("  #{errors} errors outside examples") if errors.to_i.positive?
+        line(style("  #{total} total  #{succeeded} succeeded  #{failed} failed  #{pending} pending", summary_color))
+        line(style("  Finished in #{format_seconds(duration)}  |  files loaded in #{format_milliseconds(load_time)}", summary_color))
+        line(style("  #{errors} errors outside examples", summary_color)) if errors.to_i.positive?
       end
 
       def profile(notification)
@@ -404,7 +406,7 @@ module RSpec
         threshold = @configuration.slow_threshold
         return "" if threshold.nil? || run_time.nil? || run_time < threshold
 
-        "  #{format_seconds(run_time)}"
+        style("  #{format_seconds(run_time)}", :pink)
       end
 
       def format_seconds(value)

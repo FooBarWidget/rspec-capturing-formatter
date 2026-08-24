@@ -31,6 +31,33 @@ RSpec.describe RSpec::BetterFormatter::Renderer do
     expect(output.string).to eq("\e[0m\e[1mA car › it is red\e[0m\n")
   end
 
+  it "colors durations that meet the slow threshold pink" do
+    configuration.color = true
+
+    renderer.example_started("A car › it is slow")
+    renderer.result(:passed, 0.75)
+
+    expect(output.string).to include("\e[95m  750 ms\e[0m")
+  end
+
+  it "keeps the summary header bold and colors passing summary text green" do
+    configuration.color = true
+
+    renderer.summary(total: 1, succeeded: 1, failed: 0, pending: 0, duration: 0.1, load_time: 0.01)
+
+    expect(output.string).to include("\e[0m\e[1mSummary\e[0m\n")
+    expect(output.string).to include("\e[32m  1 total  1 succeeded  0 failed  0 pending\e[0m")
+  end
+
+  it "keeps the summary header bold and colors failing summary text red" do
+    configuration.color = true
+
+    renderer.summary(total: 1, succeeded: 0, failed: 1, pending: 0, duration: 0.1, load_time: 0.01)
+
+    expect(output.string).to include("\e[0m\e[1mSummary\e[0m\n")
+    expect(output.string).to include("\e[31m  1 total  0 succeeded  1 failed  0 pending\e[0m")
+  end
+
   it "colors plain stdout and stderr payloads" do
     configuration.color = true
 
