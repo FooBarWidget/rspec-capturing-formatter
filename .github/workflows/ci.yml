@@ -22,12 +22,7 @@ jobs:
           bundler-cache: true
           bundler: default # Test compatibility with Ruby-default bundler
 
-      - run: bundle exec rspec --force-color
-        env:
-          RUBYOPT: --enable=frozen-string-literal
+      - run: bundle exec rake spec FORCE_COLOR=1
 
       - name: Dogfood
-        run: bundle exec rspec --force-color --require ./rspec/better_formatter --format RSpec::BetterFormatter
-        env:
-          RUBYOPT: --enable=frozen-string-literal
-          RUBYLIB: lib
+        run: bundle exec rake spec DOGFOOD=1 FORCE_COLOR=1
