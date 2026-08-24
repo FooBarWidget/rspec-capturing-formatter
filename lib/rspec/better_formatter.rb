@@ -7,6 +7,7 @@ require_relative "better_formatter/version"
 require_relative "better_formatter/configuration"
 require_relative "better_formatter/sanitizer"
 require_relative "better_formatter/stream_proxy"
+require_relative "better_formatter/windows_terminal"
 require_relative "better_formatter/renderer"
 require_relative "better_formatter/windows_command_line"
 

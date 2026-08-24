@@ -34,7 +34,7 @@ The source label is selected before rendering:
 - `suite stdout` and `suite stderr` outside an example;
 - `rspec` for formatter messages from RSpec itself.
 
-Every physical captured line has two spaces, its source label, ` | `, and the payload. With formatter color enabled, stdout and suite-stdout lines use gray, while stderr and suite-stderr lines use yellow. Plain captured payload is styled with the source color. If a capture stream emits an application SGR sequence, its payload remains unwrapped for the rest of that capture entry so later formatter styling cannot overwrite application styling. A newline-terminated chunk does not leave a dangling prefix. A partial chunk is still written immediately and is completed at the next boundary.
+Every physical captured line has two spaces, its source label, ` | `, and the payload. With formatter color enabled, stdout and suite-stdout lines use gray, while stderr and suite-stderr lines use yellow. Plain captured payload is styled with the source color. If a capture stream emits an application SGR sequence, its payload remains unwrapped for the rest of that capture entry so later formatter styling cannot overwrite application styling. A newline-terminated chunk does not leave a dangling prefix. A partial chunk is still written immediately and is completed at the next boundary. See [Color support](color-support.md) for platform capability and fallback behavior.
 
 ## Results and timing
 
@@ -42,7 +42,7 @@ The formatter uses distinct statuses for passed, failed, pending, and skipped ex
 
 The default duration threshold is 0.5 seconds. A qualifying duration appears next to the result in milliseconds below one second and seconds with two decimal places at or above one second. `nil` disables per-example durations. Pending and skipped results use the same threshold logic.
 
-Status glyphs use emoji when the destination supports them and the setting allows it. The deterministic fallbacks are `[PASS]`, `[FAIL]`, `[PENDING]`, and `[SKIP]`. Formatter color is enabled by default, even for non-TTY output, unless a non-empty `NO_COLOR`, RSpec `color_mode == :off`, or formatter configuration disables it.
+Status glyphs use emoji when the destination supports them and the setting allows it. The deterministic fallbacks are `[PASS]`, `[FAIL]`, `[PENDING]`, and `[SKIP]`. Formatter color is enabled by default, even for non-TTY output, unless a non-empty `NO_COLOR`, RSpec `color_mode == :off`, formatter configuration, or platform capability disables it. See [Color support](color-support.md).
 
 ## Failure and summary output
 
@@ -54,4 +54,4 @@ The summary notification is authoritative. The renderer prints total, succeeded,
 
 ## Styling boundaries
 
-Captured application SGR sequences remain in the payload. The sanitizer turns other terminal controls into visible text. The renderer writes a reset before formatter-owned lines and at captured boundaries, so application styling does not bleed into statuses, failures, or summaries. Example headers are bold when formatter color is enabled. Formatter styling does not change captured applications' own `NO_COLOR` behavior.
+Captured application SGR sequences remain in the payload when the destination supports ANSI. The sanitizer turns other terminal controls into visible text. The renderer writes a reset before formatter-owned lines and at captured boundaries, so application styling does not bleed into statuses, failures, or summaries. Example headers are bold when formatter color is enabled. Formatter styling does not change captured applications' own `NO_COLOR` behavior. See [Color support](color-support.md).

@@ -7,6 +7,7 @@ This handbook explains how `rspec-better-formatter` works and how to change it s
 - [Architecture and flow](architecture.md)
 - [Capture and stream lifecycle](capture-and-streams.md)
 - [Rendering and attribution](rendering-and-attribution.md)
+- [Color support](color-support.md)
 - [Sanitization and encoding](sanitization-and-encoding.md)
 - [RSpec integration and output](rspec-integration.md)
 - [User-facing documentation](user-facing-documentation.md)

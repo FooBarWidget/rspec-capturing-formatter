@@ -11,10 +11,11 @@ The runtime is split into these components:
 - `RSpec::BetterFormatter` in `lib/rspec/better_formatter.rb` receives RSpec notifications and maintains attribution state.
 - `CaptureManager` in `stream_proxy.rb` owns the process-global proxies, the active formatter lease, synchronization, and the bypass scope.
 - `StreamProxy` in `stream_proxy.rb` presents a writable-IO surface and routes writes either to capture or to its backing stream.
-- `Renderer` in `renderer.rb` owns report entries, spacing, prefixes, status lines, failures, summaries, encoding, and flushes.
+- `Renderer` in `renderer.rb` owns report entries, spacing, prefixes, status lines, failures, summaries, encoding, styling, and flushes. The platform color policy is documented in [Color support](color-support.md).
 - `Sanitizer` in `sanitizer.rb` converts captured bytes into safe UTF-8 report text while retaining state across writes.
 - `Configuration` in `configuration.rb` validates the five formatter settings.
 - `WindowsCommandLine` creates pasteable Windows rerun arguments.
+- `WindowsTerminal` detects supported interactive Windows color output and enables Virtual Terminal processing.
 
 The capture manager is process-global. Each formatter instance has its own renderer. The manager routes captured writes only to the formatter that owns the active lease, and can activate only one formatter instance at a time.
 

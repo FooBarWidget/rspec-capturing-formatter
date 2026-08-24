@@ -46,7 +46,7 @@ Writers without encoding metadata are supported. If such a writer rejects a non-
 
 ## Styling safety
 
-SGR is the one class of terminal sequence intentionally preserved because it represents application styling. The renderer detects both ordinary and modern colon-form SGR sequences. It inserts a reset before formatter-owned content and when capture ends. This keeps application colors inside their captured text.
+SGR is the one class of terminal sequence intentionally preserved because it represents application styling when the destination supports ANSI. The renderer detects both ordinary and modern colon-form SGR sequences. It inserts a reset before formatter-owned content and when capture ends. Unsupported Windows console output removes SGR at the rendering boundary. See [Color support](color-support.md).
 
 When changing this code, test boundaries rather than only complete strings:
 

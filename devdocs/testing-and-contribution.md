@@ -10,7 +10,7 @@ Unit tests isolate behavior that does not need a real RSpec process:
 
 - configuration validation and defaults;
 - sanitizer state, controls, invalid bytes, and encodings;
-- renderer spacing, prefixes, styling, timing, and destination encoding;
+- renderer spacing, prefixes, styling, timing, destination encoding, and [color support](color-support.md);
 - proxy IO methods, cloning, reopening, and return values;
 - manager leases, activation rollback, bypass, and synchronization;
 - Windows argument escaping.
@@ -26,7 +26,7 @@ They cover:
 - passed, failed, pending, skipped, fixed-pending, and fail-fast runs;
 - failure presenter output, aggregate failures, shared examples, and metadata;
 - profile, seed, deprecations, outside-example errors, and JSON separation;
-- colors, `NO_COLOR`, non-TTY output, binary data, and encoding boundaries;
+- colors, `NO_COLOR`, Windows Terminal, non-TTY output, binary data, and encoding boundaries;
 - package build and load behavior.
 
 Use argument arrays with `Open3`. Do not build a shell command string. This is required for spaces, quotes, brackets, drive paths, and Windows compatibility.

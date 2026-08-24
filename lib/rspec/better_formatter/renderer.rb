@@ -28,10 +28,11 @@ module RSpec
 
       attr_reader :output
 
-      def initialize(output, configuration, capture_manager: nil)
+      def initialize(output, configuration, capture_manager: nil, ansi_supported: nil)
         @output = output || StringIO.new
         @configuration = configuration
         @capture_manager = capture_manager
+        @ansi_supported = ansi_supported.nil? ? WindowsTerminal.ansi_supported?(@output) : ansi_supported
         @entry_started = false
         @entry_kind = nil
         @entry_path = nil
@@ -110,12 +111,12 @@ module RSpec
         label, color = status_label(skipped ? :skipped : :pending)
         line("  #{style(label, color)}#{duration_suffix(run_time)}")
         line("  reason | #{reason}") unless reason.to_s.empty?
-        line("  rerun  | #{location}") unless location.to_s.empty?
+        line("  rerun | #{location}") unless location.to_s.empty?
       end
 
       def rerun_inline(command)
         finish_capture
-        line("  rerun  | #{command}")
+        line("  rerun | #{command}")
       end
 
       def failure(notification_lines)
@@ -219,6 +220,7 @@ module RSpec
       private
 
       def emit_captured_text(source, text)
+        text = strip_sgr(text) unless @ansi_supported
         return if text.empty?
 
         @capture_styled = true if text.match?(/\e\[[0-?]*[ -\/]*m/)
@@ -259,8 +261,10 @@ module RSpec
       end
 
       def line(value, color = nil)
+        value = value.to_s
+        value = strip_sgr(value) unless @ansi_supported
         write_raw(RESET) if color_enabled?
-        write_raw(style(value.to_s, color))
+        write_raw(style(value, color))
         write_raw("\n")
       end
 
@@ -355,6 +359,7 @@ module RSpec
       end
 
       def color_enabled?
+        return false unless @ansi_supported
         return false if ENV["NO_COLOR"] && !ENV["NO_COLOR"].empty?
         return false if defined?(RSpec) && RSpec.respond_to?(:configuration) &&
           RSpec.configuration.respond_to?(:color_mode) && RSpec.configuration.color_mode == :off
@@ -367,6 +372,10 @@ module RSpec
         return value unless color
 
         "#{COLORS.fetch(color)}#{value}#{RESET}"
+      end
+
+      def strip_sgr(value)
+        value.gsub(/\e\[[0-?]*[ -\/]*m/, "")
       end
 
       def status_label(status)

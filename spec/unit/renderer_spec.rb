@@ -51,6 +51,21 @@ RSpec.describe RSpec::BetterFormatter::Renderer do
     expect(output.string).to include("\e[90m  stdout | \e[0m\e[31mred output\e[0m\e[0m\n")
   end
 
+  it "omits formatter and application colors when ANSI is unsupported" do
+    configuration.color = true
+    renderer = described_class.new(output, configuration, ansi_supported: false)
+
+    renderer.example_started("A car › it logs")
+    renderer.capture("stdout", "\e[31mred output\e[0m\n")
+    renderer.failure(["\e[31mFailure/Error: broken\e[0m"])
+    renderer.result(:passed, 0.01)
+
+    expect(output.string).to eq(
+      "A car › it logs\n  stdout | red output\n  Failure/Error: broken\n  [PASS] succeeded\n"
+    )
+    expect(output.string).not_to include("\e[")
+  end
+
   it "shows qualifying durations for pending and skipped examples" do
     renderer.example_started("A car › it is pending")
     renderer.pending("known issue", "rspec spec/car_spec.rb:1", run_time: 0.75)

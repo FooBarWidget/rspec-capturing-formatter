@@ -44,6 +44,15 @@ Color and emphasis are omitted from this example. Actual output uses color and e
 
 ## Usage
 
+Add to your Gemfile:
+
+```ruby
+gem "rspec-better-formatter"
+
+# For terminal color support on Windows
+gem "fiddle", platforms: [:windows]
+```
+
 Add the formatter to `.rspec`:
 
 ```text
@@ -79,6 +88,8 @@ end
 ```
 
 When `config.color == true`, coloring is enabled even when there is no TTY. Coloring is always disabled when `NO_COLOR` or when RSpec's `--no-color` option is set.
+
+On Windows, interactive coloring is supported in Windows Terminal. Legacy Windows console sessions are not supported color targets and receive plain-text output instead of raw ANSI escape sequences. Redirected reports keep ANSI coloring when enabled, so they can be viewed by ANSI-aware CI logs or tools.
 
 ## Output capture limitations
 

@@ -1,4 +1,7 @@
 source "https://rubygems.org"
 
 gemspec path: ".."
+
+gem "fiddle"
+
 gem "rspec", "~> 4.0.0.beta1"

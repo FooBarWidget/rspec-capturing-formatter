@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-26.04, windows-2025]
         rspec: ["3.12", "3.13", "4.0"]
     env:
       BUNDLE_GEMFILE: gemfiles/rspec_${{ matrix.rspec }}.gemfile
