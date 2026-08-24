@@ -111,12 +111,12 @@ module RSpec
         label, color = status_label(skipped ? :skipped : :pending)
         line("  #{style(label, color)}#{duration_suffix(run_time)}")
         line("  reason | #{reason}") unless reason.to_s.empty?
-        line("  rerun | #{location}") unless location.to_s.empty?
+        line("  rerun  | #{location}") unless location.to_s.empty?
       end
 
       def rerun_inline(command)
         finish_capture
-        line("  rerun | #{command}")
+        line("  rerun  | #{command}")
       end
 
       def failure(notification_lines)

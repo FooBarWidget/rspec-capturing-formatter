@@ -74,9 +74,9 @@ RSpec.describe RSpec::BetterFormatter::Renderer do
 
     expect(output.string).to eq(
       "A car › it is pending\n  [PENDING] pending  750 ms\n" \
-      "  reason | known issue\n  rerun | rspec spec/car_spec.rb:1\n\n" \
+      "  reason | known issue\n  rerun  | rspec spec/car_spec.rb:1\n\n" \
       "A car › it is skipped\n  [SKIP] skipped  1.25 s\n" \
-      "  reason | not available\n  rerun | rspec spec/car_spec.rb:2\n"
+      "  reason | not available\n  rerun  | rspec spec/car_spec.rb:2\n"
     )
   end
 

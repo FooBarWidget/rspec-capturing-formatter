@@ -19,7 +19,7 @@ A car › during maintenance mode
 A car › during maintenance mode › it disables safety guardrails
   stdout | frobnicating the door
   ❌ failed  2.00 s
-  rerun | rspec ./spec/car_spec.rb:20
+  rerun  | rspec ./spec/car_spec.rb:20
 
   Failure/Error: raise "test"
 

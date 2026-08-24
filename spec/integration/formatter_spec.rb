@@ -36,7 +36,7 @@ RSpec.describe "the formatter integration" do
     expect(output).to include("after hook")
     expect(output).to include("succeeded")
     expect(output).to include("failed")
-    expect(output).to include("rerun | rspec ./spec/fixtures/basic_fixture.rb:16")
+    expect(output).to include("rerun  | rspec ./spec/fixtures/basic_fixture.rb:16")
     expect(output).to include("pending")
     expect(output).to include("3 total  1 succeeded  1 failed  1 pending")
     expect(output).to include("Summary")
