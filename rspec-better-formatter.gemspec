@@ -12,7 +12,14 @@ Gem::Specification.new do |spec|
   spec.files = Dir["lib/**/*.rb", "README.md", "LICENSE.txt", "Rakefile"]
   spec.require_paths = ["lib"]
   spec.add_runtime_dependency "rspec-core", ">= 3.12"
-  spec.add_development_dependency "rake"
+
+  # This section is for dev dependencies that are *simultaneously* used by all of these:
+  # - main Rake invocation
+  # - main RSpec invocation
+  # - version-specific RSpec invocations (utilizing gemfiles/*)
+  #
+  # For dev dependencies used only in 1 of those places, put in the corresponding Gemfile.
   spec.add_development_dependency "rspec", ">= 3.12"
+  spec.add_development_dependency "fiddle"
   spec.add_development_dependency "logger"
 end
