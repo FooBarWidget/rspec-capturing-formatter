@@ -1,7 +1,7 @@
 require "spec_helper"
 require "stringio"
 
-RSpec.describe RSpec::BetterFormatter::StreamProxy do
+RSpec.describe RSpec::CapturingFormatter::StreamProxy do
   # Keep these test doubles scoped to the example group.
   # standard:disable Lint/ConstantDefinitionInBlock
   class PassthroughManager
@@ -157,11 +157,11 @@ RSpec.describe RSpec::BetterFormatter::StreamProxy do
   end
 
   it "rejects a concurrent formatter without disabling the owner" do
-    manager = RSpec::BetterFormatter::CaptureManager.new
-    first = RSpec::BetterFormatter.new(StringIO.new, capture_manager: manager)
+    manager = RSpec::CapturingFormatter::CaptureManager.new
+    first = RSpec::CapturingFormatter.new(StringIO.new, capture_manager: manager)
 
     expect {
-      RSpec::BetterFormatter.new(StringIO.new, capture_manager: manager)
+      RSpec::CapturingFormatter.new(StringIO.new, capture_manager: manager)
     }.to raise_error(RuntimeError)
     expect(manager).to be_active
   ensure

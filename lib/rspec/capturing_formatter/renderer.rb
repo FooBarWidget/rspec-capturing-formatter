@@ -3,7 +3,7 @@
 require "stringio"
 
 module RSpec
-  class BetterFormatter
+  class CapturingFormatter
     # Owns formatter report boundaries, captured-line state, styling, encoding fallbacks, and pending writes.
     class Renderer
       RESET = "\e[0m"

@@ -3,7 +3,7 @@
 require "fiddle" if Gem.win_platform?
 
 module RSpec
-  class BetterFormatter
+  class CapturingFormatter
     # Detects and enables ANSI virtual-terminal output for supported Windows consoles.
     module WindowsTerminal
       ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004

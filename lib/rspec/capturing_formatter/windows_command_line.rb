@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module RSpec
-  class BetterFormatter
+  class CapturingFormatter
     module WindowsCommandLine
       CMD_META = "()[]%!^\"`<>&|;, *?\t"
 

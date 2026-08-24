@@ -1,4 +1,4 @@
-This is the codebase for the rspec-better-formatter gem: keeps test progress readable when examples write logs to stdout or stderr. Streams logs as they happen, labels their source, and prints the complete RSpec nesting path before each example. Output is append-only: it does not use carriage-return progress, cursor movement, or other terminal rewriting, so the same report works in a terminal and in CI logs.
+This is the codebase for the rspec-capturing-formatter gem: keeps test progress readable when examples write logs to stdout or stderr. Streams logs as they happen, labels their source, and prints the complete RSpec nesting path before each example. Output is append-only: it does not use carriage-return progress, cursor movement, or other terminal rewriting, so the same report works in a terminal and in CI logs.
 
 # General principles
 
@@ -39,6 +39,7 @@ Use judgment to handle low-impact problems autonomously and mention noteworthy o
   - Test specific RSpec version compatibility: `bundle exec rake spec BUNDLE_GEMFILE=gemfiles/rspec_*.gemfile`
   - Test specific spec file: `bundle exec rake spec FILE=spec/unit/lease_spec.rb:23`
   - Test specific example: `bundle exec rake spec EXAMPLE=EAGAIN` (passed to `rspec -e`)
+  - Run test suite itself with rspec-capturing-formatter: `bundle exec rake spec DOGFOOD=1`
 - Test Standard Ruby conformance: `bundle exec standardrb`
 - The native `cmd.exe` quoting test is intentionally skipped off Windows; do not treat a Linux pass as Windows verification
 

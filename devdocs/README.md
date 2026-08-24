@@ -1,6 +1,6 @@
 # Developer handbook
 
-This handbook explains how `rspec-better-formatter` works and how to change it safely. Start with the architecture for an end-to-end map, then use the topic descriptions below to find the canonical guidance for a change. The public [README](../README.md) documents installation, configuration, supported behavior, and user-facing limitations.
+This handbook explains how `rspec-capturing-formatter` works and how to change it safely. Start with the architecture for an end-to-end map, then use the topic descriptions below to find the canonical guidance for a change. The public [README](../README.md) documents installation, configuration, supported behavior, and user-facing limitations.
 
 ## Topics
 

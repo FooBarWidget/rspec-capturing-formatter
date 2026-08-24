@@ -10,7 +10,7 @@ Use a fresh-process integration fixture when the behavior depends on requiring t
 
 Pass an argument array to `Open3`; do not build a shell command string. Arrays preserve spaces, quotes, brackets, drive paths, and Windows command behavior without adding an unintended shell parsing layer.
 
-Formatter unit tests that construct `BetterFormatter` pass a fresh `CaptureManager` through `capture_manager:`. This keeps the formatter used to dogfood the suite from conflicting with the formatter under test while lease and integration tests continue to cover the process-global singleton.
+Formatter unit tests that construct `CapturingFormatter` pass a fresh `CaptureManager` through `capture_manager:`. This keeps the formatter used to dogfood the suite from conflicting with the formatter under test while lease and integration tests continue to cover the process-global singleton.
 
 ## Isolate global state
 
@@ -28,7 +28,7 @@ For stateful byte handling, exercise splits at every relevant boundary rather th
 
 The gemspec accepts `rspec-core >= 3.12`, and the maintained bundles exercise RSpec 3.12, 3.13, and the 4.0 prerelease currently locked to beta1 on Linux and Windows. Event code uses capability checks where notification and failure-presenter APIs differ. A change to registration, result interpretation, presenter calls, profile fields, rerun metadata, or final notification order requires the affected focused tests plus every maintained RSpec Gemfile.
 
-Avoid version checks when an API capability check expresses the actual requirement. Keep compatibility adaptation in `BetterFormatter` so `Renderer` continues to consume stable semantic operations.
+Avoid version checks when an API capability check expresses the actual requirement. Keep compatibility adaptation in `CapturingFormatter` so `Renderer` continues to consume stable semantic operations.
 
 Windows command quoting and Windows Terminal capability have separate failure models. Keep their tests separate: command quoting protects two `cmd.exe` parsing layers, while terminal policy tests protect environment gating and Fiddle failure handling. Native handle selection and Virtual Terminal mode changes remain an interactive Windows verification gap.
 

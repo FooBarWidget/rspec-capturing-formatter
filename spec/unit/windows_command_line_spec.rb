@@ -4,7 +4,7 @@ require "open3"
 require "rbconfig"
 require "tempfile"
 
-RSpec.describe RSpec::BetterFormatter::WindowsCommandLine do
+RSpec.describe RSpec::CapturingFormatter::WindowsCommandLine do
   it "preserves ordinary backslashes and quotes trailing backslashes correctly" do
     escaped = described_class.escape(%q(C:\Program Files\specs\car_spec.rb[1:2]))
     trailing = described_class.escape("C:\\specs\\")
@@ -26,7 +26,7 @@ RSpec.describe RSpec::BetterFormatter::WindowsCommandLine do
   it "round-trips special arguments through native cmd.exe" do
     skip "Windows-only command-line round trip" unless Gem.win_platform?
 
-    Dir.mktmpdir("better-formatter-cmd") do |directory|
+    Dir.mktmpdir("capturing-formatter-cmd") do |directory|
       printer = File.join(directory, "argv_printer.rb")
       launcher = File.join(directory, "rspec.bat")
       File.write(printer, "require 'json'; STDOUT.write(JSON.generate(ARGV))")

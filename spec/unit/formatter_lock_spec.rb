@@ -1,6 +1,6 @@
 require "spec_helper"
 
-RSpec.describe RSpec::BetterFormatter do
+RSpec.describe RSpec::CapturingFormatter do
   # Keep these test doubles scoped to the example group.
   # standard:disable Lint/ConstantDefinitionInBlock
   ExampleResult = Struct.new(:run_time)
@@ -110,7 +110,7 @@ RSpec.describe RSpec::BetterFormatter do
     configuration.color = false
     configuration.emoji = false
     output = BlockingOutput.new
-    manager = RSpec::BetterFormatter::CaptureManager.new
+    manager = RSpec::CapturingFormatter::CaptureManager.new
     formatter = described_class.new(output, capture_manager: manager)
     example = Example.new(ExampleResult.new(0.01))
     notification = Notification.new(example)
@@ -148,7 +148,7 @@ RSpec.describe RSpec::BetterFormatter do
     configuration.color = false
     configuration.emoji = false
     output = EagainOutput.new
-    manager = RSpec::BetterFormatter::CaptureManager.new
+    manager = RSpec::CapturingFormatter::CaptureManager.new
     formatter = described_class.new(output, capture_manager: manager)
     example = Example.new(ExampleResult.new(0.01))
     formatter.instance_variable_set(:@current_example, example)
@@ -169,7 +169,7 @@ RSpec.describe RSpec::BetterFormatter do
     configuration.color = false
     configuration.emoji = false
     output = EagainOutput.new
-    manager = RSpec::BetterFormatter::CaptureManager.new
+    manager = RSpec::CapturingFormatter::CaptureManager.new
     formatter = described_class.new(output, capture_manager: manager)
     example = Example.new(ExampleResult.new(0.01))
     formatter.instance_variable_set(:@current_example, example)
@@ -190,7 +190,7 @@ RSpec.describe RSpec::BetterFormatter do
     configuration.color = false
     configuration.emoji = false
     output = PartialEagainOutput.new
-    manager = RSpec::BetterFormatter::CaptureManager.new
+    manager = RSpec::CapturingFormatter::CaptureManager.new
     formatter = described_class.new(output, capture_manager: manager)
     example = Example.new(ExampleResult.new(0.01))
     formatter.instance_variable_set(:@current_example, example)

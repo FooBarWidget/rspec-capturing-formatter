@@ -1,10 +1,10 @@
 # Architecture and runtime flow
 
-`rspec-better-formatter` joins two asynchronous inputs into one append-only report: RSpec notifications describe the test run, while Ruby writes through `$stdout` and `$stderr` provide application output. The formatter captures at the Ruby global-stream layer rather than replacing operating-system file descriptors, which avoids a pipe reader and a platform-specific capture backend.
+`rspec-capturing-formatter` joins two asynchronous inputs into one append-only report: RSpec notifications describe the test run, while Ruby writes through `$stdout` and `$stderr` provide application output. The formatter captures at the Ruby global-stream layer rather than replacing operating-system file descriptors, which avoids a pipe reader and a platform-specific capture backend.
 
 ## Component map
 
-- `RSpec::BetterFormatter` in `lib/rspec/better_formatter.rb` interprets [RSpec events and attribution](rspec-events-and-attribution.md), including the active group and example.
+- `RSpec::CapturingFormatter` in `lib/rspec/capturing_formatter.rb` interprets [RSpec events and attribution](rspec-events-and-attribution.md), including the active group and example.
 - `CaptureManager` and `StreamProxy` in `stream_proxy.rb` own the process-global [capture and stream lifecycle](capture-and-stream-lifecycle.md).
 - `Renderer` in `renderer.rb` turns formatter decisions and captured text into the [report model](report-model-and-rendering.md), then handles [destination writes and backpressure](report-destinations-and-backpressure.md).
 - `Sanitizer` in `sanitizer.rb` incrementally converts each captured source into [safe UTF-8 report text](sanitizing-captured-input.md).
@@ -15,7 +15,7 @@ The capture manager is process-global because `$stdout` and `$stderr` are proces
 
 ## Runtime flow
 
-1. Requiring `rspec/better_formatter` loads and registers the formatter, then installs inactive proxies into `$stdout` and `$stderr`. Inactive proxies pass writes directly to their backing streams.
+1. Requiring `rspec/capturing_formatter` loads and registers the formatter, then installs inactive proxies into `$stdout` and `$stderr`. Inactive proxies pass writes directly to their backing streams.
 2. RSpec constructs the formatter with an output destination. Construction creates the renderer and acquires the manager's single active lease.
 3. RSpec notifications update attribution state and ask the renderer to append report content. Writes through an active proxy enter the same reentrant monitor, are attributed to the current example or outer context, sanitized, and rendered immediately.
 4. The renderer encodes report text for the RSpec destination and writes inside the manager's bypass scope so a destination equal to `$stdout` or `$stderr` cannot capture the report recursively.

@@ -1,6 +1,6 @@
 # RSpec events and attribution
 
-`RSpec::BetterFormatter` converts RSpec notifications and captured writes into semantic report operations. It owns which example or outer scope receives output, how RSpec result data is interpreted, and which final report sections are requested. `Renderer` owns only how those operations appear; see [Report model and rendering](report-model-and-rendering.md).
+`RSpec::CapturingFormatter` converts RSpec notifications and captured writes into semantic report operations. It owns which example or outer scope receives output, how RSpec result data is interpreted, and which final report sections are requested. `Renderer` owns only how those operations appear; see [Report model and rendering](report-model-and-rendering.md).
 
 ## Notification phases
 

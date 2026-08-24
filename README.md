@@ -1,6 +1,6 @@
-# rspec-better-formatter
+# rspec-capturing-formatter
 
-`rspec-better-formatter` is an RSpec formatter that keeps test progress readable when examples write logs to stdout or stderr. This is especially helpful in CI, where interleaved output can make it difficult to tell which example produced a particular log message. By keeping output clearly associated with the example that produced it, the formatter makes failures easier to understand and debug.
+`rspec-capturing-formatter` is an RSpec formatter that keeps test progress readable when examples write logs to stdout or stderr. This is especially helpful in CI, where interleaved output can make it difficult to tell which example produced a particular log message. By keeping output clearly associated with the example that produced it, the formatter makes failures easier to understand and debug.
 
 Example:
 
@@ -47,7 +47,7 @@ Color and emphasis are omitted from this example. Actual output uses color and e
 Add to your Gemfile:
 
 ```ruby
-gem "rspec-better-formatter"
+gem "rspec-capturing-formatter"
 
 # For terminal color support on Windows
 gem "fiddle", platforms: [:windows]
@@ -56,11 +56,11 @@ gem "fiddle", platforms: [:windows]
 Add the formatter to `.rspec`:
 
 ```text
---require rspec/better_formatter
---format RSpec::BetterFormatter
+--require rspec/capturing_formatter
+--format RSpec::CapturingFormatter
 ```
 
-List `rspec/better_formatter` before other early-required files that construct loggers. This allows output from those loggers to be included in the report.
+List `rspec/capturing_formatter` before other early-required files that construct loggers. This allows output from those loggers to be included in the report.
 
 Before an RSpec run starts, requiring the formatter does not hide or buffer boot output. Code that requires `$stdout` or `$stderr` to be an actual `IO` should not require this gem unless it uses the formatter.
 
@@ -68,8 +68,8 @@ Use this as the sole human-readable console formatter. Machine formatters may st
 
 ```sh
 bundle exec rspec \
-  --require rspec/better_formatter \
-  --format RSpec::BetterFormatter \
+  --require rspec/capturing_formatter \
+  --format RSpec::CapturingFormatter \
   --format json --out tmp/rspec.json
 ```
 
@@ -78,7 +78,7 @@ bundle exec rspec \
 Defaults can be changed with a Ruby configuration block:
 
 ```ruby
-RSpec::BetterFormatter.configure do |config|
+RSpec::CapturingFormatter.configure do |config|
   config.slow_threshold = 0.5 # seconds; nil disables per-example timing
   config.separator = " › "
   config.color = true

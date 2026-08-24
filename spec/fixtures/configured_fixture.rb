@@ -1,4 +1,4 @@
-RSpec::BetterFormatter.configure do |config|
+RSpec::CapturingFormatter.configure do |config|
   config.color = false
   config.emoji = false
   config.slow_threshold = nil

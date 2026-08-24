@@ -1,10 +1,10 @@
 require "spec_helper"
 require "stringio"
 
-RSpec.describe RSpec::BetterFormatter::Renderer do
+RSpec.describe RSpec::CapturingFormatter::Renderer do
   it "flushes sanitizer carries at entry boundaries" do
     output = StringIO.new
-    configuration = RSpec::BetterFormatter::Configuration.new.tap do |value|
+    configuration = RSpec::CapturingFormatter::Configuration.new.tap do |value|
       value.color = false
       value.emoji = false
     end

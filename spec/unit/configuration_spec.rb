@@ -1,6 +1,6 @@
 require "spec_helper"
 
-RSpec.describe RSpec::BetterFormatter::Configuration do
+RSpec.describe RSpec::CapturingFormatter::Configuration do
   subject(:configuration) { described_class.new }
 
   it "has the documented defaults" do

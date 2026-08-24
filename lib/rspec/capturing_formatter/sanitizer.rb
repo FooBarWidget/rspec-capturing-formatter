@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module RSpec
-  class BetterFormatter
+  class CapturingFormatter
     # Converts terminal-affecting application output into safe report text.
     class Sanitizer
       MAX_ESCAPE_BYTES = 128

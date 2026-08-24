@@ -3,19 +3,19 @@
 require "rspec/core"
 require "shellwords"
 
-require_relative "better_formatter/version"
-require_relative "better_formatter/configuration"
-require_relative "better_formatter/sanitizer"
-require_relative "better_formatter/stream_proxy"
-require_relative "better_formatter/windows_terminal"
-require_relative "better_formatter/renderer"
-require_relative "better_formatter/windows_command_line"
+require_relative "capturing_formatter/version"
+require_relative "capturing_formatter/configuration"
+require_relative "capturing_formatter/sanitizer"
+require_relative "capturing_formatter/stream_proxy"
+require_relative "capturing_formatter/windows_terminal"
+require_relative "capturing_formatter/renderer"
+require_relative "capturing_formatter/windows_command_line"
 
 module RSpec
-  class BetterFormatter
+  class CapturingFormatter
     class << self
       def configuration
-        @configuration ||= BetterFormatter::Configuration.new
+        @configuration ||= CapturingFormatter::Configuration.new
       end
 
       def configure
@@ -25,12 +25,12 @@ module RSpec
 
     attr_reader :output
 
-    def initialize(output, capture_manager: BetterFormatter::CaptureManager.instance)
+    def initialize(output, capture_manager: CapturingFormatter::CaptureManager.instance)
       @output = output
       @manager = capture_manager
       manager_was_active = @manager.active?
       manager_generation = @manager.generation
-      @renderer = BetterFormatter::Renderer.new(
+      @renderer = CapturingFormatter::Renderer.new(
         output,
         self.class.configuration,
         capture_manager: @manager
@@ -263,7 +263,7 @@ module RSpec
     def shell_escape(value)
       return Shellwords.escape(value) unless Gem.win_platform?
 
-      BetterFormatter::WindowsCommandLine.rerun_argument(value)
+      CapturingFormatter::WindowsCommandLine.rerun_argument(value)
     end
 
     def path_separator
@@ -291,9 +291,9 @@ module RSpec
     end
   end
 
-  BetterFormatter::CaptureManager.install!
+  CapturingFormatter::CaptureManager.install!
   RSpec::Core::Formatters.register(
-    BetterFormatter,
+    CapturingFormatter,
     :start,
     :example_group_started,
     :example_group_finished,

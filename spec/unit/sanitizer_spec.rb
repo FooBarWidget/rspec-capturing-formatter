@@ -1,6 +1,6 @@
 require "spec_helper"
 
-RSpec.describe RSpec::BetterFormatter::Sanitizer do
+RSpec.describe RSpec::CapturingFormatter::Sanitizer do
   it "normalizes carriage returns and preserves SGR" do
     sanitizer = described_class.new
 

@@ -9,9 +9,9 @@ task :spec do
 
   if ENV["DOGFOOD"]
     rspec_args << "--require"
-    rspec_args << "./lib/rspec/better_formatter"
+    rspec_args << "./lib/rspec/capturing_formatter"
     rspec_args << "--format"
-    rspec_args << "RSpec::BetterFormatter"
+    rspec_args << "RSpec::CapturingFormatter"
   end
   if ENV["FORCE_COLOR"]
     rspec_args << "--force-color"

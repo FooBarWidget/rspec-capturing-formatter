@@ -1,7 +1,7 @@
 require "spec_helper"
 require "stringio"
 
-RSpec.describe RSpec::BetterFormatter::CaptureManager do
+RSpec.describe RSpec::CapturingFormatter::CaptureManager do
   it "does not let a stale owning lease stop a later run" do
     manager = described_class.new
     output_a = StringIO.new
@@ -28,7 +28,7 @@ RSpec.describe RSpec::BetterFormatter::CaptureManager do
     manager.activate(output, formatter)
 
     expect { manager.activate(output, formatter) }
-      .to raise_error("another RSpec::BetterFormatter is already active")
+      .to raise_error("another RSpec::CapturingFormatter is already active")
   ensure
     manager&.restore!
   end

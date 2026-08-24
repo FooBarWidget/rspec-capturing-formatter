@@ -1,6 +1,6 @@
 require "spec_helper"
 
-RSpec.describe RSpec::BetterFormatter::Renderer do
+RSpec.describe RSpec::CapturingFormatter::Renderer do
   # Keep this test double scoped to the example group.
   # standard:disable Lint/ConstantDefinitionInBlock
   class AsciiOnlyOutput
@@ -25,7 +25,7 @@ RSpec.describe RSpec::BetterFormatter::Renderer do
 
   it "falls back to visible byte escapes for writers without encoding metadata" do
     output = AsciiOnlyOutput.new
-    configuration = RSpec::BetterFormatter::Configuration.new.tap do |value|
+    configuration = RSpec::CapturingFormatter::Configuration.new.tap do |value|
       value.color = false
       value.emoji = false
     end

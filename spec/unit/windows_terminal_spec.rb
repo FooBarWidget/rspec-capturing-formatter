@@ -1,7 +1,7 @@
 require "spec_helper"
 require "fiddle"
 
-RSpec.describe RSpec::BetterFormatter::WindowsTerminal do
+RSpec.describe RSpec::CapturingFormatter::WindowsTerminal do
   let(:output) { instance_double("output", tty?: true) }
   let(:api) { instance_double("native api") }
 

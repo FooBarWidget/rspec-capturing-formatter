@@ -3,7 +3,7 @@
 require "monitor"
 
 module RSpec
-  class BetterFormatter
+  class CapturingFormatter
     # Coordinates process-global stream proxies, formatter leases, synchronized writes, and bypass state.
     class CaptureManager
       # Keep keyword construction explicit for older supported Ruby runtimes.
@@ -33,7 +33,7 @@ module RSpec
         @active = false
         @pending_nonblock = {}
         @generation = 0
-        @bypass_key = :rspec_better_formatter_bypass_depth
+        @bypass_key = :rspec_capturing_formatter_bypass_depth
       end
 
       def install!
@@ -187,7 +187,7 @@ module RSpec
       def active_lease
         return unless @active
 
-        raise "another RSpec::BetterFormatter is already active"
+        raise "another RSpec::CapturingFormatter is already active"
       end
 
       def restore_globals

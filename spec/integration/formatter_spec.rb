@@ -19,8 +19,8 @@ RSpec.describe "the formatter integration" do
 
   it "captures logs, attributes hooks, and reconciles results" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/basic_fixture.rb", __dir__)
     )
@@ -52,14 +52,14 @@ RSpec.describe "the formatter integration" do
       #{versions}
       original_stdout = $stdout
       original_stderr = $stderr
-      require "rspec/better_formatter"
+      require "rspec/capturing_formatter"
       require "rspec/core/sandbox"
       fixture = #{File.expand_path("../fixtures/configured_fixture.rb", __dir__).inspect}
 
       2.times do |index|
         status = nil
         RSpec::Core::Sandbox.sandboxed do
-          status = RSpec::Core::Runner.run(["--format", "RSpec::BetterFormatter", "--no-color", fixture])
+          status = RSpec::Core::Runner.run(["--format", "RSpec::CapturingFormatter", "--no-color", fixture])
         end
         abort "run failed" unless status.zero?
         abort "stdout not restored after run \#{index}" unless $stdout.equal?(original_stdout)
@@ -78,14 +78,14 @@ RSpec.describe "the formatter integration" do
   it "restores globals when formatter setup fails before activation" do
     script = <<~RUBY
       require "stringio"
-      require "rspec/better_formatter"
-      manager = RSpec::BetterFormatter::CaptureManager.instance
+      require "rspec/capturing_formatter"
+      manager = RSpec::CapturingFormatter::CaptureManager.instance
       original_stdout = manager.stdout_proxy.backing
       original_stderr = manager.stderr_proxy.backing
-      RSpec::BetterFormatter::Renderer.define_singleton_method(:new) { |*| raise "setup failed" }
+      RSpec::CapturingFormatter::Renderer.define_singleton_method(:new) { |*| raise "setup failed" }
 
       begin
-        RSpec::BetterFormatter.new(StringIO.new)
+        RSpec::CapturingFormatter.new(StringIO.new)
       rescue => error
         abort "wrong error" unless error.message == "setup failed"
       end
@@ -102,8 +102,8 @@ RSpec.describe "the formatter integration" do
 
   it "does not duplicate output captured by RSpec any-process matchers" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/matcher_fixture.rb", __dir__)
     )
@@ -122,8 +122,8 @@ RSpec.describe "the formatter integration" do
 
   it "labels suite and context hooks without repeating contiguous headings" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/hooks_fixture.rb", __dir__)
     )
@@ -144,8 +144,8 @@ RSpec.describe "the formatter integration" do
 
   it "renders expected pending details inline" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/pending_fixture.rb", __dir__)
     )
@@ -161,8 +161,8 @@ RSpec.describe "the formatter integration" do
 
   it "honors pending failure suppression modes" do
     skip_command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/pending_skip_fixture.rb", __dir__)
     )
@@ -184,8 +184,8 @@ RSpec.describe "the formatter integration" do
 
   it "keeps RSpec presenter details and extra failure lines" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/failure_metadata_fixture.rb", __dir__)
     )
@@ -200,11 +200,11 @@ RSpec.describe "the formatter integration" do
   end
 
   it "writes captured output to the formatter destination while keeping JSON separate" do
-    Tempfile.create(["better-formatter", ".txt"]) do |report|
-      Tempfile.create(["better-formatter", ".json"]) do |json_report|
+    Tempfile.create(["capturing-formatter", ".txt"]) do |report|
+      Tempfile.create(["capturing-formatter", ".json"]) do |json_report|
         command = rspec_command(
-          "--require", "rspec/better_formatter",
-          "--format", "RSpec::BetterFormatter",
+          "--require", "rspec/capturing_formatter",
+          "--format", "RSpec::CapturingFormatter",
           "--out", report.path,
           "--format", "json",
           "--out", json_report.path,
@@ -222,8 +222,8 @@ RSpec.describe "the formatter integration" do
 
   it "captures a logger retaining the proxy created after require" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/logger_fixture.rb", __dir__)
     )
@@ -237,8 +237,8 @@ RSpec.describe "the formatter integration" do
 
   it "captures output written from an example thread" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/thread_fixture.rb", __dir__)
     )
@@ -251,8 +251,8 @@ RSpec.describe "the formatter integration" do
 
   it "renders binary captured output safely" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/binary_fixture.rb", __dir__)
     )
@@ -265,8 +265,8 @@ RSpec.describe "the formatter integration" do
 
   it "joins an encoded character split across writes" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/encoding_fixture.rb", __dir__)
     )
@@ -279,8 +279,8 @@ RSpec.describe "the formatter integration" do
 
   it "reports a fixed pending example as failed" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/fixed_pending_fixture.rb", __dir__)
     )
@@ -294,8 +294,8 @@ RSpec.describe "the formatter integration" do
 
   it "applies configuration changes made by loaded spec files" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       File.expand_path("../fixtures/configured_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
@@ -308,8 +308,8 @@ RSpec.describe "the formatter integration" do
 
   it "enables default non-TTY color and honors NO_COLOR" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       File.expand_path("../fixtures/basic_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
@@ -325,8 +325,8 @@ RSpec.describe "the formatter integration" do
 
   it "preserves RSpec deprecation output" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/deprecation_fixture.rb", __dir__)
     )
@@ -340,8 +340,8 @@ RSpec.describe "the formatter integration" do
 
   it "passes output after formatter shutdown through unchanged" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/after_stop_fixture.rb", __dir__)
     )
@@ -355,8 +355,8 @@ RSpec.describe "the formatter integration" do
 
   it "includes profile totals and example locations" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--profile", "1",
       "--no-color",
       File.expand_path("../fixtures/profile_fixture.rb", __dir__)
@@ -375,8 +375,8 @@ RSpec.describe "the formatter integration" do
 
   it "keeps an empty profile section visible" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--profile", "0",
       "--no-color",
       File.expand_path("../fixtures/profile_fixture.rb", __dir__)
@@ -391,8 +391,8 @@ RSpec.describe "the formatter integration" do
 
   it "shows qualifying durations for pending examples" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/slow_pending_fixture.rb", __dir__)
     )
@@ -405,8 +405,8 @@ RSpec.describe "the formatter integration" do
 
   it "shows qualifying durations for skipped examples" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/slow_skipped_fixture.rb", __dir__)
     )
@@ -419,8 +419,8 @@ RSpec.describe "the formatter integration" do
 
   it "uses example ids when failed examples share a location" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/duplicate_location_fixture.rb", __dir__)
     )
@@ -434,8 +434,8 @@ RSpec.describe "the formatter integration" do
 
   it "preserves aggregate failure details from RSpec" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/aggregate_fixture.rb", __dir__)
     )
@@ -449,8 +449,8 @@ RSpec.describe "the formatter integration" do
 
   it "preserves shared-example traces from RSpec" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/shared_example_fixture.rb", __dir__)
     )
@@ -464,8 +464,8 @@ RSpec.describe "the formatter integration" do
 
   it "keeps pre-start messages and prints a used random seed in the final phase" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--order", "rand:123",
       "--tag", "focus",
       "--no-color",
@@ -483,8 +483,8 @@ RSpec.describe "the formatter integration" do
 
   it "reports errors raised outside examples separately" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/hook_error_fixture.rb", __dir__)
     )
@@ -499,8 +499,8 @@ RSpec.describe "the formatter integration" do
 
   it "preserves context hook failures inline" do
     command = rspec_command(
-      "--require", "rspec/better_formatter",
-      "--format", "RSpec::BetterFormatter",
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
       "--no-color",
       File.expand_path("../fixtures/context_hook_error_fixture.rb", __dir__)
     )
@@ -521,9 +521,9 @@ RSpec.describe "the formatter integration" do
       #{versions}
       original_stdout = $stdout
       original_stderr = $stderr
-      require "rspec/better_formatter"
+      require "rspec/capturing_formatter"
       status = RSpec::Core::Runner.run([
-        "--format", "RSpec::BetterFormatter", "--no-color", "--order", "defined", "--fail-fast=1",
+        "--format", "RSpec::CapturingFormatter", "--no-color", "--order", "defined", "--fail-fast=1",
         #{File.expand_path("../fixtures/fail_fast_fixture.rb", __dir__).inspect}
       ])
       abort "expected failure" unless status == 1
@@ -543,10 +543,10 @@ RSpec.describe "the formatter integration" do
   end
 
   it "builds and loads the installed gem" do
-    Dir.mktmpdir("better-formatter-package") do |directory|
-      gem_path = File.join(directory, "rspec-better-formatter.gem")
+    Dir.mktmpdir("capturing-formatter-package") do |directory|
+      gem_path = File.join(directory, "rspec-capturing-formatter.gem")
       build_stdout, build_stderr, build_status = Open3.capture3(
-        "gem", "build", "rspec-better-formatter.gemspec", "--output", gem_path,
+        "gem", "build", "rspec-capturing-formatter.gemspec", "--output", gem_path,
         chdir: File.expand_path("../..", __dir__)
       )
       expect(build_status).to be_success, build_stdout + build_stderr
@@ -562,7 +562,7 @@ RSpec.describe "the formatter integration" do
       smoke_stdout, smoke_stderr, smoke_status = Open3.capture3(
         {"GEM_HOME" => install_dir, "GEM_PATH" => gem_path_env},
         RbConfig.ruby, "-e",
-        "gem 'rspec-better-formatter', '0.1.0'; require 'rspec/better_formatter'; puts RSpec::BetterFormatter::VERSION"
+        "gem 'rspec-capturing-formatter', '0.1.0'; require 'rspec/capturing_formatter'; puts RSpec::CapturingFormatter::VERSION"
       )
       expect(smoke_status).to be_success, smoke_stdout + smoke_stderr
       expect(smoke_stdout).to include("0.1.0")

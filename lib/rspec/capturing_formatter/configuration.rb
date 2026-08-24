@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module RSpec
-  class BetterFormatter
+  class CapturingFormatter
     class Configuration
       attr_reader :slow_threshold, :separator, :color, :emoji
 

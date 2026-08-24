@@ -1,10 +1,10 @@
 require "spec_helper"
 require "stringio"
 
-RSpec.describe RSpec::BetterFormatter::Renderer do
+RSpec.describe RSpec::CapturingFormatter::Renderer do
   let(:output) { StringIO.new }
   let(:configuration) do
-    RSpec::BetterFormatter::Configuration.new.tap do |value|
+    RSpec::CapturingFormatter::Configuration.new.tap do |value|
       value.color = false
       value.emoji = false
     end
