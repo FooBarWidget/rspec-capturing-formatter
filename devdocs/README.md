@@ -4,7 +4,7 @@ This handbook explains how `rspec-capturing-formatter` works and how to change i
 
 ## Topics
 
-- [Architecture and runtime flow](architecture.md): component boundaries, the require-to-report lifecycle, synchronization, and interactions between capture, RSpec events, rendering, and output destinations.
+- [Architecture and runtime flow](architecture.md): component boundaries, the runtime flow from requiring the formatter through writing the final report, synchronization, and interactions between capture, RSpec events, rendering, and output destinations.
 - [Capture and stream lifecycle](capture-and-stream-lifecycle.md): `$stdout`, `$stderr`, `CaptureManager`, `StreamProxy`, installation, activation leases, raw mode, bypass, threads, nonblocking source writes, and RSpec output matchers.
 - [RSpec events and attribution](rspec-events-and-attribution.md): notification phases, example-group state, hook and message attribution, pending and failure semantics, rerun targets, summaries, profiles, seeds, and RSpec API compatibility.
 - [Report model and rendering](report-model-and-rendering.md): append-only entries, spacing, source labels, partial physical lines, statuses, timings, failure layout, and final report sections.

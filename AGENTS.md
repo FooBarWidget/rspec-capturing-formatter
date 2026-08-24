@@ -28,7 +28,7 @@ Use judgment to handle low-impact problems autonomously and mention noteworthy o
 
 # Documentation style
 
-- Use sentence case for headings. Do not cap line widths.
+- Use natural, plain English. Use sentence case for headings. Do not cap line widths.
 - Write for a capable developer who is new to this codebase. Explain purpose or constraints before implementation details. Introduce technical terms before using them densely. Prefer concrete subjects and actions. Use examples when they explain behavior more quickly than a list. Include only information that helps a contributor find the correct code, make a decision, or avoid a likely mistake. Leave exhaustive method behavior and minor edge cases to the code and tests. Do not repeat information that an example or an earlier section already makes clear. After drafting, remove every sentence that is merely true but not useful.
 - Keep information that helps readers understand a non-obvious design, find where to make a change, make a decision, or avoid a mistake. Remove repetition and details easily recovered from code or tests.
 - Keep user documentation focused on public setup, behavior, and limitations. Omit internals and exhaustive behavior.
