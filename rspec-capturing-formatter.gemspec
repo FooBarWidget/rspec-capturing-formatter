@@ -13,7 +13,7 @@ Gem::Specification.new do |spec|
   spec.files = Dir["lib/**/*.rb", "README.md", "LICENSE.txt", "Rakefile"]
   spec.require_paths = ["lib"]
 
-  # After updating dependencies, run `bundle exec rake bundle_install_all`
+  # After updating dependencies, run `bundle exec rake bundle:install -m`
   # to sync all Bundler lockfiles.
 
   spec.add_runtime_dependency "rspec-core", ">= 3.12"

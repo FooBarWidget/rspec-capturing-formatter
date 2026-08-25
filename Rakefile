@@ -32,22 +32,50 @@ task :spec do
   ].flatten.compact.map { |x| Shellwords.escape(x) }.join(" ")
 end
 
-desc "Run bundle install for all Gemfiles"
-task :bundle_install_all do
-  Bundler.with_unbundled_env do
-    sh "bundle install"
-    Dir["gemfiles/*.gemfile"].each do |gemfile|
-      sh "env BUNDLE_GEMFILE=#{Shellwords.escape(gemfile)} bundle install"
-    end
+def tested_rspec_versions
+  @tested_rspec_versions ||= Dir["gemfiles/*.gemfile"].map do |path|
+    File.basename(path).sub(/\..*/, "")
   end
 end
 
+desc "Run bundle install for all Gemfiles"
+task "bundle:install" => [
+  "bundle:install:main",
+  tested_rspec_versions.map { |rspec_version| "bundle:install:#{rspec_version}" }
+].flatten
+
 desc "Run bundle update for all Gemfiles"
-task :bundle_update_all do
+task "bundle:update" => [
+  "bundle:update:main",
+  tested_rspec_versions.map { |rspec_version| "bundle:update:#{rspec_version}" }
+].flatten
+
+desc "Run bundle install for main Gemfile"
+task "bundle:install:main" do
+  Bundler.with_unbundled_env do
+    sh "bundle install"
+  end
+end
+
+desc "Run bundle update for main Gemfile"
+task "bundle:update:main" do
   Bundler.with_unbundled_env do
     sh "bundle update --all"
-    Dir["gemfiles/*.gemfile"].each do |gemfile|
-      sh "env BUNDLE_GEMFILE=#{Shellwords.escape(gemfile)} bundle update --all"
+  end
+end
+
+tested_rspec_versions.each do |rspec_version|
+  desc "Run bundle install for #{rspec_version} Gemfile"
+  task "bundle:install:#{rspec_version}" do
+    Bundler.with_unbundled_env do
+      sh "env BUNDLE_GEMFILE=gemfiles/#{Shellwords.escape(rspec_version)}.gemfile bundle install"
+    end
+  end
+
+  desc "Run bundle update for #{rspec_version} Gemfile"
+  task "bundle:update:#{rspec_version}" do
+    Bundler.with_unbundled_env do
+      sh "env BUNDLE_GEMFILE=gemfiles/#{Shellwords.escape(rspec_version)}.gemfile bundle update --all"
     end
   end
 end
