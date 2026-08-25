@@ -20,11 +20,12 @@ jobs:
       - run: bundle exec standardrb
 
   test:
+    name: Test ${{ matrix.os }} RSpec ${{ matrix.rspec }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-26.04, windows-2025]
-        rspec: ["3.12", "3.13", "4.0"]
+        rspec: ["3_12", "3_13", "4_0"]
     env:
       BUNDLE_GEMFILE: gemfiles/rspec_${{ matrix.rspec }}.gemfile
     runs-on: ${{ matrix.os }}
