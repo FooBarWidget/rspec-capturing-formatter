@@ -36,7 +36,11 @@ jobs:
           - 3_12
           - 3_13
           - 4_0
-
+        exclude:
+          # Too exotic combination, too hard to test for. Basic stuff breaks such as
+          # invoking `ruby -S rspec`.
+          - os: windows-2025
+            ruby: jruby
     env:
       BUNDLE_GEMFILE: gemfiles/rspec_${{ matrix.rspec }}.gemfile
     runs-on: ${{ matrix.os }}
