@@ -1,0 +1,52 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "release-*"
+
+jobs:
+  release:
+    runs-on: ubuntu-26.04
+    environment: release
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+        with:
+          ruby-version: "4.0"
+          bundler-cache: true
+
+      - name: Verify version number
+        id: get_version
+        run: |
+          VERSION_STRING=$(ruby -r ./lib/rspec/capturing_formatter/version.rb -e "puts RSpec::CapturingFormatter::VERSION")
+          if ! [[ "$GITHUB_REF_NAME" =~ ^release- ]]; then
+            echo "Tag name must start with a 'release-'."
+            exit 1
+          fi
+          if [[ "$GITHUB_REF_NAME" != "release-${VERSION_STRING}" ]]; then
+            echo "Tag version ($GITHUB_REF_NAME) does not match version.rb ($VERSION_STRING)"
+            exit 1
+          fi
+
+      - uses: rubygems/release-gem@7f9650160c1a4e7989fdc9855807bdbd421d8b6b # v1.4.1
+
+      - name: Create attestation
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: "pkg/*.gem"
+
+      - name: Create GitHub release
+        run: gh release create "$GITHUB_REF_NAME" pkg/*.gem --title "$GITHUB_REF_NAME" --notes-from-tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
