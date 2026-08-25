@@ -17,6 +17,8 @@ Gem::Specification.new do |spec|
   # to sync all Bundler lockfiles.
 
   spec.add_runtime_dependency "rspec-core", ">= 3.12"
+  spec.add_runtime_dependency "shellwords"
+  spec.add_runtime_dependency "stringio"
 
   # Below section is for dev dependencies that are *simultaneously* used by all of these:
   # - main Rake+RSpec invocation
@@ -25,7 +27,6 @@ Gem::Specification.new do |spec|
   # For dev dependencies used only in 1 of those places, put in the corresponding Gemfile.
   spec.add_development_dependency "rspec", ">= 3.12"
   spec.add_development_dependency "rake"
-  spec.add_development_dependency "shellwords"
   spec.add_development_dependency "fiddle"
   spec.add_development_dependency "logger"
 end

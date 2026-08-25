@@ -1,5 +1,4 @@
 require "bundler/gem_tasks"
-require "shellwords"
 
 task default: :spec
 
@@ -24,12 +23,12 @@ task :spec do
     rspec_args << example
   end
 
-  ruby [
+  ruby(*[
     "--enable=frozen-string-literal",
     "-S",
     "rspec",
     rspec_args
-  ].flatten.compact.map { |x| Shellwords.escape(x) }.join(" ")
+  ].flatten.compact)
 end
 
 def tested_rspec_versions

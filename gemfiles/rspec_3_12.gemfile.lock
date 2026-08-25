@@ -3,6 +3,8 @@ PATH
   specs:
     rspec-capturing-formatter (1.0.0)
       rspec-core (>= 3.12)
+      shellwords
+      stringio
 
 GEM
   remote: https://rubygems.org/
@@ -25,6 +27,7 @@ GEM
       rspec-support (~> 3.12.0)
     rspec-support (3.12.2)
     shellwords (0.2.2)
+    stringio (3.2.0)
 
 PLATFORMS
   ruby
@@ -37,7 +40,6 @@ DEPENDENCIES
   rake
   rspec (~> 3.12.0, >= 3.12)
   rspec-capturing-formatter!
-  shellwords
 
 CHECKSUMS
   diff-lcs (1.6.2) sha256=9ae0d2cba7d4df3075fe8cd8602a8604993efc0dfa934cff568969efb1909962
@@ -51,6 +53,7 @@ CHECKSUMS
   rspec-mocks (3.12.7) sha256=b2f10a7879781de9448f28e5dc399277d4eac14d577b450e4c04b7897fe4c6a8
   rspec-support (3.12.2) sha256=de719abdc9d03842c96052be4a2dab8d7fd9314d0b2488b0f755008d071b761d
   shellwords (0.2.2) sha256=b8695a791de2f71472de5abdc3f4332f6535a4177f55d8f99e7e44266cd32f94
+  stringio (3.2.0) sha256=c37cb2e58b4ffbd33fe5cd948c05934af997b36e0b6ca6fdf43afa234cf222e1
 
 BUNDLED WITH
   4.0.16
