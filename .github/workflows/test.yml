@@ -18,20 +18,6 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_target' }}
 
 jobs:
-  lint:
-    runs-on: ubuntu-26.04
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
-        with:
-          ruby-version: "4.0"
-          bundler-cache: true
-
-      - run: bundle exec standardrb
-
   test:
     name: Test ${{ matrix.os }} Ruby=${{ matrix.ruby }} RSpec=${{ matrix.rspec }}
     strategy:
@@ -55,6 +41,11 @@ jobs:
             ruby: jruby
     env:
       BUNDLE_GEMFILE: gemfiles/rspec_${{ matrix.rspec }}.gemfile
+    # Trigger only on push (internal branches) or on PRs from forks.
+    # Avoids duplicate runs on PRs from internal branches.
+    if: >
+      (github.event_name != 'pull_request' && github.event_name != 'pull_request_target')
+      || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     steps:
@@ -75,3 +66,31 @@ jobs:
       - name: Dogfood
         run: bundle exec rake spec DOGFOOD=1 FORCE_COLOR=1
         timeout-minutes: 10
+
+  lint-build-audit:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    permissions:
+      security-events: write
+    # Trigger only on push (internal branches) or on PRs from forks.
+    # Avoids duplicate runs on PRs from internal branches.
+    if: >
+      (github.event_name != 'pull_request' && github.event_name != 'pull_request_target')
+      || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Run zizmor
+        uses: zizmorcore/zizmor-action@b1d7e1fb5de872772f31590499237e7cce841e8e # v0.5.3
+
+      - uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+        with:
+          ruby-version: "4.0"
+          bundler-cache: true
+
+      - run: bundle exec standardrb
+
+      - name: Build gem
+        run: bundle exec rake build
