@@ -39,14 +39,13 @@ RSpec.describe RSpec::CapturingFormatter::WindowsCommandLine do
         "!RBF_SENTINEL!",
         'specs\car_spec.rb[1:2]'
       ]
-
       values.each do |value|
-        body = [launcher, value].map do |argument|
-          described_class.rerun_argument(argument)
-        end.join(" ")
+        command = "rspec.bat #{described_class.rerun_argument(value)}"
         stdout, stderr, status = Open3.capture3(
           {"RBF_SENTINEL" => "EXPANDED"},
-          ENV.fetch("COMSPEC", "cmd.exe"), "/d", "/v:on", "/s", "/c", body
+          ENV.fetch("COMSPEC", "cmd.exe"), "/d", "/v:on", "/q",
+          chdir: directory,
+          stdin_data: "#{command}\r\nexit\r\n"
         )
 
         expect(status).to be_success, stderr

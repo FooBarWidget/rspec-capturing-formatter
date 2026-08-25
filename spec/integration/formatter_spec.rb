@@ -17,6 +17,15 @@ RSpec.describe "the formatter integration" do
     [RbConfig.ruby, "-I#{File.absolute_path("../../lib", __dir__)}", "-e", loader, "--", *arguments]
   end
 
+  def rerun_command(argument)
+    escaped = if Gem.win_platform?
+      RSpec::CapturingFormatter::WindowsCommandLine.rerun_argument(argument)
+    else
+      Shellwords.escape(argument)
+    end
+    "rerun  | rspec #{escaped}"
+  end
+
   it "captures logs, attributes hooks, and reconciles results" do
     command = rspec_command(
       "--require", "rspec/capturing_formatter",
@@ -36,7 +45,7 @@ RSpec.describe "the formatter integration" do
     expect(output).to include("after hook")
     expect(output).to include("succeeded")
     expect(output).to include("failed")
-    expect(output).to include("rerun  | rspec ./spec/fixtures/basic_fixture.rb:16")
+    expect(output).to include(rerun_command("./spec/fixtures/basic_fixture.rb:16"))
     expect(output).to include("pending")
     expect(output).to include("3 total  1 succeeded  1 failed  1 pending")
     expect(output).to include("Summary")
@@ -428,8 +437,8 @@ RSpec.describe "the formatter integration" do
     output = stdout + stderr
 
     expect(status).not_to be_success
-    expect(output).to include("duplicate_location_fixture.rb\\[1:1\\]")
-    expect(output).to include("duplicate_location_fixture.rb\\[1:2\\]")
+    expect(output).to include(rerun_command("./spec/fixtures/duplicate_location_fixture.rb[1:1]"))
+    expect(output).to include(rerun_command("./spec/fixtures/duplicate_location_fixture.rb[1:2]"))
   end
 
   it "preserves aggregate failure details from RSpec" do

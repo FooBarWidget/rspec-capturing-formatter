@@ -243,7 +243,7 @@ module RSpec
     end
 
     def rerun_command(example)
-      "rspec #{shell_escape(rerun_argument(example))}"
+      "rspec #{escape_rerun_argument(rerun_argument(example))}"
     end
 
     def rerun_argument(example)
@@ -260,10 +260,12 @@ module RSpec
       (duplicate && example.respond_to?(:id)) ? example.id : location
     end
 
-    def shell_escape(value)
-      return Shellwords.escape(value) unless Gem.win_platform?
-
-      CapturingFormatter::WindowsCommandLine.rerun_argument(value)
+    def escape_rerun_argument(value)
+      if Gem.win_platform?
+        CapturingFormatter::WindowsCommandLine.rerun_argument(value)
+      else
+        Shellwords.escape(value)
+      end
     end
 
     def path_separator
