@@ -5,8 +5,8 @@ Gem::Specification.new do |spec|
   spec.name = "rspec-capturing-formatter"
   spec.version = RSpec::CapturingFormatter::VERSION
   spec.authors = ["Hongli Lai"]
-  spec.summary = "An append-only, log-friendly RSpec formatter"
-  spec.description = "An RSpec formatter that keeps test progress readable when examples write logs."
+  spec.summary = "A CI-friendly RSpec formatter that shows logs"
+  spec.description = "A CI-friendly RSpec formatter that keeps test progress readable when examples write logs."
   spec.homepage = "https://github.com/rspec-capturing-formatter/rspec-capturing-formatter"
   spec.license = "MIT"
 
