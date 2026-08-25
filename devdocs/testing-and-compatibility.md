@@ -34,6 +34,6 @@ Windows command quoting and Windows Terminal capability fail for different reaso
 
 ## Packaging and documentation
 
-Run the gem build and installation smoke path when changing the gemspec, packaged files, load paths, or runtime requirements. It verifies that the built gem loads and exposes its version rather than relying on the source checkout.
+Run the gem build and installation smoke path when changing the gemspec, packaged files, load paths, or runtime requirements. It verifies that the built gem loads from its temporary installation rather than relying on the source checkout.
 
 When a change affects installation, configuration, supported output, or limitations, update the public README in the same change. When it changes architecture, major behavior, rationale, or a subsystem boundary, update the canonical handbook topic. Keep README examples representative of the report rather than turning them into an exhaustive specification.

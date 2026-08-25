@@ -558,14 +558,25 @@ RSpec.describe "the formatter integration" do
       )
       expect(install_status).to be_success, install_stdout + install_stderr
 
+      installed_gem_dir = Dir.glob(File.join(install_dir, "gems", "rspec-capturing-formatter-*")).fetch(0)
       gem_path_env = ([install_dir] + Gem.path).join(File::PATH_SEPARATOR)
-      smoke_stdout, smoke_stderr, smoke_status = Open3.capture3(
-        {"GEM_HOME" => install_dir, "GEM_PATH" => gem_path_env},
-        RbConfig.ruby, "-e",
-        "gem 'rspec-capturing-formatter', '0.1.0'; require 'rspec/capturing_formatter'; puts RSpec::CapturingFormatter::VERSION"
-      )
+      smoke_stdout, smoke_stderr, smoke_status = Bundler.with_unbundled_env do
+        Open3.capture3(
+          {
+            "GEM_HOME" => install_dir,
+            "GEM_PATH" => gem_path_env,
+            "INSTALLED_GEM_DIR" => installed_gem_dir
+          },
+          RbConfig.ruby, "-I#{File.join(installed_gem_dir, "lib")}", "-e",
+          <<~RUBY
+            require "rspec/capturing_formatter"
+            installed_gem_dir = File.expand_path(ENV.fetch("INSTALLED_GEM_DIR"))
+            installed_formatter_path = File.join(installed_gem_dir, "lib", "rspec", "capturing_formatter.rb")
+            abort "did not load the installed gem: \#{installed_formatter_path}" unless $LOADED_FEATURES.include?(installed_formatter_path)
+          RUBY
+        )
+      end
       expect(smoke_status).to be_success, smoke_stdout + smoke_stderr
-      expect(smoke_stdout).to include("0.1.0")
     end
   end
 end
