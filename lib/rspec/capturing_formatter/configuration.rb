@@ -46,6 +46,7 @@ module RSpec
         @emoji = value
       end
 
+      # Keep "unset" distinct from explicit :full so CapturingFormatter can inherit RSpec's setting.
       def pending_failure_output=(value)
         unless [:full, :no_backtrace, :skip].include?(value)
           raise ArgumentError, "pending_failure_output must be :full, :no_backtrace, or :skip"

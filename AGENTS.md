@@ -3,6 +3,7 @@ This is the codebase for the rspec-capturing-formatter gem: keeps test progress 
 # General principles
 
 - Before starting work, read the table of contents in `./devdocs/README.md` to discover available developer documentation. Read relevant documents as needed for the task.
+- Speak in natural, plain English.
 - `README.md` is curated user documentation, not an exhaustive specification.
 - Prioritize Windows compatibility, append-only output, and one human-readable formatter per stream.
 - When picking colors, pick those that are readable in both light and dark themed terminals.
@@ -14,9 +15,9 @@ This is the codebase for the rspec-capturing-formatter gem: keeps test progress 
   - Shell scripts: use pipefail
   - When ignoring errors, only ignore specific errors, not blanket ignore all errors
 - Commenting strategy:
-  - Use concise comments to explain non-obvious why: algorithms, invariants, caveats, and local design decisions. Avoid narrating straightforward code.
-  - Important classes/modules should briefly state their responsibility when not obvious.
-  - Keep comments local and short. Broader architecture, substantial rationale, or complex/cross-cutting caveats belong in the developer handbook; comments may summarize and link to it.
+  - Comment non-obvious context the code cannot express clearly: purpose, domain terms, responsibilities, input and output semantics, algorithm stages, invariants, caveats, and decisions. Briefly state non-obvious class, module or method responsibilities. Put the comment where that information applies.
+  - Write for a capable contributor new to the subsystem or platform. Use natural, plain English and precise technical terms where useful. Define unfamiliar concepts where introduced, explain how they relate to nearby code, and do not make readers derive their meaning from mechanics or call sites.
+  - State purpose or constraints before mechanics. Keep comments short and local, put broader or cross-cutting rationale/caveats in the developer handbook, and do not narrate straightforward code.
 - Ruby:
   - Use Standard Ruby
 

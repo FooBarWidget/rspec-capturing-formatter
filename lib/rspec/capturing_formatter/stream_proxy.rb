@@ -4,9 +4,9 @@ require "monitor"
 
 module RSpec
   class CapturingFormatter
-    # Coordinates process-global stream proxies, formatter leases, synchronized writes, and bypass state.
+    # Owns process-global stream capture and serializes captured writes with formatter callbacks.
     class CaptureManager
-      # Keep keyword construction explicit for older supported Ruby runtimes.
+      # Older supported Rubies need keyword_init: true to construct leases from keyword arguments.
       # standard:disable Style/RedundantStructKeywordInit
       Lease = Struct.new(:manager, :owner, :generation, keyword_init: true) do
         # standard:enable Style/RedundantStructKeywordInit
@@ -28,6 +28,7 @@ module RSpec
       attr_reader :stdout_proxy, :stderr_proxy
 
       def initialize
+        # Renderer writes can re-enter through a proxy, so capture synchronization must be reentrant.
         @monitor = Monitor.new
         @installed = false
         @active = false
@@ -67,7 +68,7 @@ module RSpec
             @stdout_proxy.activate!
             @stderr_proxy.activate!
             Lease.new(manager: self, owner: true, generation: @generation)
-          # Restore the proxies even when activation fails with a non-standard exception.
+          # Activation mutates process-global capture state, so roll it back even outside StandardError.
           # standard:disable Lint/RescueException
           rescue Exception
             # standard:enable Lint/RescueException
@@ -100,6 +101,7 @@ module RSpec
             if nonblocking_method?(method) && pending != value
               raise Errno::EAGAIN
             end
+            # This payload is already captured; remove its marker while a bypassed flush may re-enter here.
             @pending_nonblock.delete(proxy)
             begin
               @formatter.flush_pending
@@ -191,12 +193,13 @@ module RSpec
       end
 
       def restore_globals
+        # Do not overwrite a global stream that another component replaced while capture was active.
         $stdout = @original_stdout if @stdout_proxy && $stdout.equal?(@stdout_proxy)
         $stderr = @original_stderr if @stderr_proxy && $stderr.equal?(@stderr_proxy)
       end
     end
 
-    # Provides an IO-like boundary for captured writes and the raw mode required by RSpec output matchers.
+    # Presents an IO-like stream whose writes are captured or passed unchanged to its backing stream.
     class StreamProxy
       attr_reader :source
 
@@ -211,6 +214,7 @@ module RSpec
       def initialize_copy(other)
         super
         @manager = other.manager
+        # RSpec's any-process output matcher reopens from a clone and needs its current backing stream.
         @manager.synchronize do
           @backing = begin
             other.backing.dup
@@ -355,6 +359,7 @@ module RSpec
       end
 
       def reopen(target, *arguments)
+        # Proxy targets restore matcher snapshots; other targets must bypass capture.
         @manager.synchronize do
           if target.is_a?(StreamProxy)
             if descriptor_backing?
@@ -386,6 +391,7 @@ module RSpec
 
       def close
         @closed = true
+        # A retained proxy can outlive capture; do not close a backing stream restored as a process global.
         @backing.close unless @backing.equal?($stdout) || @backing.equal?($stderr)
         nil
       end

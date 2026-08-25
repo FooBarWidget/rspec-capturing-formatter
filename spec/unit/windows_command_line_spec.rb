@@ -2,7 +2,7 @@ require "spec_helper"
 require "json"
 require "open3"
 require "rbconfig"
-require "tempfile"
+require "tmpdir"
 
 RSpec.describe RSpec::CapturingFormatter::WindowsCommandLine do
   it "preserves ordinary backslashes and quotes trailing backslashes correctly" do
@@ -41,6 +41,8 @@ RSpec.describe RSpec::CapturingFormatter::WindowsCommandLine do
       ]
       values.each do |value|
         command = "rspec.bat #{described_class.rerun_argument(value)}"
+        # Keep !RBF_SENTINEL! literal through delayed expansion, the interactive
+        # shell, and the batch launcher's `%*` forwarding.
         stdout, stderr, status = Open3.capture3(
           {"RBF_SENTINEL" => "EXPANDED"},
           ENV.fetch("COMSPEC", "cmd.exe"), "/d", "/v:on", "/q",

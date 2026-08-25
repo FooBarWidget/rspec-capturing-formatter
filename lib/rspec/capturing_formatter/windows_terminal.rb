@@ -4,13 +4,15 @@ require "fiddle" if Gem.win_platform?
 
 module RSpec
   class CapturingFormatter
-    # Detects and enables ANSI virtual-terminal output for supported Windows consoles.
+    # Determines ANSI support and enables Virtual Terminal processing for Windows Terminal output.
     module WindowsTerminal
       ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
       STD_OUTPUT_HANDLE = -11
       STD_ERROR_HANDLE = -12
 
       class << self
+        # Redirected output remains ANSI-capable; interactive output requires Windows Terminal and VT support.
+        # Fiddle failures fall back to plain text, while unrelated errors propagate.
         def ansi_supported?(output, platform: Gem.win_platform?, env: ENV, api: nil)
           return true unless platform
 
@@ -36,7 +38,7 @@ module RSpec
         end
       end
 
-      # Uses Windows' console API without adding a native runtime dependency.
+      # Isolates the Fiddle bindings for the Windows console API.
       class NativeApi
         def initialize
           kernel32 = Fiddle.dlopen("kernel32.dll")
@@ -59,6 +61,7 @@ module RSpec
           handle = @get_std_handle.call(std_handle(output))
           return false if handle.to_i.zero? || handle.to_i == -1
 
+          # Console modes are Windows DWORDs: four little-endian bytes.
           mode = Fiddle::Pointer.malloc(4)
           return false if @get_console_mode.call(handle, mode).zero?
 

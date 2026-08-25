@@ -12,6 +12,7 @@ require_relative "capturing_formatter/renderer"
 require_relative "capturing_formatter/windows_command_line"
 
 module RSpec
+  # Interprets RSpec notifications and attributes captured writes; Renderer owns presentation.
   class CapturingFormatter
     class << self
       def configuration
@@ -44,7 +45,7 @@ module RSpec
       @failed_reruns = []
       @seed_notification = nil
       @lease = @manager.activate(output, self)
-    # Roll back global state even when construction fails with a non-standard exception.
+    # Construction mutates process-global streams, so clean them up even for exceptions outside StandardError.
     # standard:disable Lint/RescueException
     rescue Exception
       # standard:enable Lint/RescueException
@@ -97,6 +98,7 @@ module RSpec
       with_capture_lock do
         example = notification.example
         reason = example.execution_result.pending_message.to_s
+        # RSpec represents a skipped example as pending without a pending exception.
         skipped = example.execution_result.pending_exception.nil?
         @renderer.pending(
           reason,
@@ -107,6 +109,7 @@ module RSpec
         unless skipped || pending_failure_output == :skip
           lines = failure_lines(notification, example)
           if pending_failure_output == :no_backtrace
+            # RSpec's formatted backtrace lines start with `# ` after styling and indentation are removed.
             lines = lines.reject { |line| strip_ansi(line.to_s).lstrip.start_with?("# ") }
           end
           @renderer.failure(lines)
@@ -195,9 +198,11 @@ module RSpec
     end
 
     def with_capture_lock(&block)
+      # RSpec notifications and captured writes share this lock so report fragments cannot interleave.
       @manager.synchronize(&block)
     end
 
+    # Normalize presenter output for inline rendering, including older presenters that reject a colorizer.
     def failure_lines(notification, example)
       lines = if notification.respond_to?(:fully_formatted_lines)
         notification.fully_formatted_lines(nil, @renderer.failure_colorizer)
@@ -218,6 +223,7 @@ module RSpec
     end
 
     def ensure_suite_or_context
+      # Suite output gets a heading only when it starts the report; unseen active groups get context headings.
       if @groups.empty?
         heading = !@suite_heading_emitted && !@report_visible
         @renderer.suite_started(heading: heading)
@@ -247,6 +253,7 @@ module RSpec
     end
 
     def rerun_argument(example)
+      # A duplicated location cannot identify one example, so prefer its stable RSpec ID.
       location = if example.respond_to?(:location_rerun_argument)
         example.location_rerun_argument
       elsif example.respond_to?(:location)
@@ -269,6 +276,7 @@ module RSpec
     end
 
     def path_separator
+      # Prefer a readable ASCII separator when the destination cannot encode the configured value.
       separator = self.class.configuration.separator
       encoding = @renderer.output.external_encoding if @renderer.output.respond_to?(:external_encoding)
       return separator unless encoding
@@ -280,6 +288,7 @@ module RSpec
     end
 
     def pending_failure_output
+      # An explicit formatter setting wins; otherwise inherit RSpec's setting when available.
       configuration = self.class.configuration
       return configuration.pending_failure_output if configuration.pending_failure_output_configured?
       return configuration.pending_failure_output unless defined?(RSpec) &&
@@ -293,7 +302,9 @@ module RSpec
     end
   end
 
+  # Requiring the formatter installs inactive pass-through proxies before RSpec constructs it.
   CapturingFormatter::CaptureManager.install!
+  # Failure and expected-pending details are rendered inline, so their dump events are intentionally omitted.
   RSpec::Core::Formatters.register(
     CapturingFormatter,
     :start,

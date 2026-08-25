@@ -1,6 +1,5 @@
 require_relative "lib/rspec/capturing_formatter/version"
 
-# After updating this
 Gem::Specification.new do |spec|
   spec.name = "rspec-capturing-formatter"
   spec.version = RSpec::CapturingFormatter::VERSION

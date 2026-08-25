@@ -2,7 +2,7 @@
 
 module RSpec
   class CapturingFormatter
-    # Converts terminal-affecting application output into safe report text.
+    # Incrementally decodes and sanitizes captured bytes into safe UTF-8 report text.
     class Sanitizer
       MAX_ESCAPE_BYTES = 128
       UTF8_LEADERS = {
@@ -26,6 +26,7 @@ module RSpec
         source_changed = @source_encoding && @source_encoding != source
         prefix = +""
         if source_changed
+          # Parser carry precedes decoder carry because it came from earlier, complete source bytes.
           prefix << parse("", final: true) if !@escape_carry.empty?
           prefix << flush_encoding_carry
           prefix << finish_converter
@@ -138,6 +139,7 @@ module RSpec
         return false unless expected && bytes.length < expected
         return false unless bytes.drop(1).all? { |byte| byte.between?(0x80, 0xBF) }
 
+        # These bounds reject overlong forms, surrogates, and code points above U+10FFFF.
         case leader
         when 0xE0
           bytes[1].nil? || bytes[1] >= 0xA0
@@ -152,6 +154,7 @@ module RSpec
         end
       end
 
+      # Preserve converter shift state across writes and retry read-ahead bytes after malformed input.
       def decode_with_converter(bytes, source)
         remaining = bytes.dup
         output = +"".b
@@ -257,6 +260,7 @@ module RSpec
       end
 
       def parse(text, final: false)
+        # Input is valid UTF-8 here; byte offsets are used only for ASCII terminal-control syntax.
         input = @escape_carry + text.to_s
         @escape_carry = +""
         output = +""
@@ -315,6 +319,7 @@ module RSpec
       end
 
       def terminal_sequence(input, start)
+        # CSI ends at an ANSI final byte; OSC ends at BEL or the String Terminator (ESC backslash).
         return ["\e", 1, false] if start + 1 >= input.bytesize
 
         second_byte = input.getbyte(start + 1)
@@ -350,6 +355,7 @@ module RSpec
       end
 
       def sgr_sequence?(sequence)
+        # Preserve only empty or numeric SGR parameters separated by semicolons or colons.
         bytes = sequence.bytes
         return false unless bytes.first(2) == [0x1B, 0x5B] && bytes.last == 0x6D
 

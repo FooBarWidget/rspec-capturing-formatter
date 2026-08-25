@@ -4,7 +4,7 @@ require "stringio"
 
 module RSpec
   class CapturingFormatter
-    # Owns formatter report boundaries, captured-line state, styling, encoding fallbacks, and pending writes.
+    # Builds the append-only report and owns captured-line boundaries and destination writes.
     class Renderer
       RESET = "\e[0m"
       COLORS = {
@@ -208,6 +208,7 @@ module RSpec
           write_raw(RESET) if color_enabled? || @capture_styled
           write_raw("\n")
         elsif @capture_styled
+          # A capture boundary must reset application SGR even when its last line already ended.
           write_raw(RESET)
         end
         @capture_open = false
@@ -225,6 +226,7 @@ module RSpec
         text = strip_sgr(text) unless @ansi_supported
         return if text.empty?
 
+        # Once application SGR appears, formatter source color stays off until the capture boundary.
         @capture_styled = true if text.match?(/\e\[[0-?]*[ -\/]*m/)
 
         begin_entry unless @entry_started
@@ -242,6 +244,7 @@ module RSpec
 
           rendered << RESET if color_enabled?
           rendered << "\n"
+          # A trailing newline closes the line without starting an empty prefixed line.
           rendered << prefix unless index == parts.length - 2 && parts.last.empty?
         end
 
@@ -287,6 +290,7 @@ module RSpec
           written = if @capture_manager
             @capture_manager.bypass { write_pending_chunk }
           elsif defined?(CaptureManager)
+            # An omitted manager still uses the process-global bypass to avoid recursive capture.
             CaptureManager.instance.bypass { write_pending_chunk }
           else
             write_pending_chunk
@@ -318,6 +322,7 @@ module RSpec
         requested = @output.external_encoding if @output.respond_to?(:external_encoding)
         return value unless requested
 
+        # Fixed byte order avoids the repeated BOM that generic UTF-16 or UTF-32 emits per fragment.
         encoding = BOM_ENCODINGS.fetch(requested.name, requested.name)
         activate_bom_destination(encoding) if BOM_ENCODINGS.key?(requested.name)
         encoded = begin
@@ -345,6 +350,7 @@ module RSpec
         @bom_output_encoding = encoding
         @output.set_encoding(encoding) if @output.respond_to?(:set_encoding)
       rescue EncodingError, TypeError
+        # Pre-encoded bytes remain writable when a destination exposes but rejects set_encoding.
         @bom_output_encoding = encoding
       end
 
@@ -418,6 +424,7 @@ module RSpec
         format("%.1f ms", value.to_f * 1000)
       end
 
+      # Adapts the formatter's color policy to RSpec's failure-presenter interface.
       class FailureColorizer
         def initialize(renderer)
           @renderer = renderer
