@@ -10,6 +10,7 @@ permissions:
 jobs:
   lint:
     runs-on: ubuntu-26.04
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
@@ -20,6 +21,7 @@ jobs:
       - run: bundle exec standardrb
 
   test:
+    name: Test ${{ matrix.os }} Ruby=${{ matrix.ruby }} RSpec=${{ matrix.rspec }}
     strategy:
       fail-fast: false
       matrix:
@@ -38,15 +40,20 @@ jobs:
     env:
       BUNDLE_GEMFILE: gemfiles/rspec_${{ matrix.rspec }}.gemfile
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        timeout-minutes: 5
       - uses: ruby/setup-ruby@v1
+        timeout-minutes: 5
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
           bundler: default # Test compatibility with Ruby-default bundler
 
       - run: bundle exec rake spec FORCE_COLOR=1
+        timeout-minutes: 10
 
       - name: Dogfood
         run: bundle exec rake spec DOGFOOD=1 FORCE_COLOR=1
+        timeout-minutes: 10
