@@ -8,7 +8,7 @@
 - `CaptureManager` and `StreamProxy` in `stream_proxy.rb` own the process-global [capture and stream lifecycle](capture-and-stream-lifecycle.md).
 - `Renderer` in `renderer.rb` turns formatter requests and captured text into the [report model](report-model-and-rendering.md), then handles [destination writes and backpressure](report-destinations-and-backpressure.md).
 - `Sanitizer` in `sanitizer.rb` incrementally converts each captured source into [safe UTF-8 report text](sanitizing-captured-input.md).
-- `WindowsTerminal` decides [terminal color capability](color-and-terminal-capability.md), while `WindowsCommandLine` quotes rerun arguments for Windows command parsing.
+- `WindowsTerminal` decides [terminal color capability](color-and-terminal-capability.md), while `WindowsCommandLine` builds encoded rerun commands that avoid exposing dynamic paths to Windows command parsing.
 - `Configuration` validates the process-global formatter settings documented in the public README.
 
 The capture manager is process-global because `$stdout` and `$stderr` are process-global. Each formatter instance has its own renderer and attribution state, but only the formatter holding the manager's active lease receives captured writes.

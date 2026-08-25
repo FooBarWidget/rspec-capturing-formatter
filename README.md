@@ -42,6 +42,8 @@ Failed examples
 
 Color and emphasis are omitted from this example. Actual output uses color and emoji when supported.
 
+On Windows, rerun lines invoke Ruby directly and contain a Base64-encoded target. Encoding keeps valid path characters such as `%` and `!` from being expanded by `cmd.exe`; the command decodes the target before starting RSpec.
+
 ## Usage
 
 Add to your Gemfile:

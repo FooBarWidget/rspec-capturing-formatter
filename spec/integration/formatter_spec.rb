@@ -18,12 +18,12 @@ RSpec.describe "the formatter integration" do
   end
 
   def rerun_command(argument)
-    escaped = if Gem.win_platform?
-      RSpec::CapturingFormatter::WindowsCommandLine.rerun_argument(argument)
+    command = if Gem.win_platform?
+      RSpec::CapturingFormatter::WindowsCommandLine.rerun_command(argument)
     else
-      Shellwords.escape(argument)
+      "rspec #{Shellwords.escape(argument)}"
     end
-    "rerun  | rspec #{escaped}"
+    "rerun  | #{command}"
   end
 
   it "captures logs, attributes hooks, and reconciles results" do

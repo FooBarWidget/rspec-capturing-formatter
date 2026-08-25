@@ -30,7 +30,7 @@ The gemspec accepts `rspec-core >= 3.12`, and the maintained bundles exercise RS
 
 Avoid version checks when an API capability check expresses the actual requirement. Keep code that handles RSpec API differences in `CapturingFormatter` so `Renderer` always receives the same kinds of rendering request.
 
-Windows command quoting and Windows Terminal capability fail for different reasons. Keep their tests separate: command quoting protects two `cmd.exe` parsing layers, while terminal-color tests cover environment checks and Fiddle failures. Native console-handle selection and Virtual Terminal mode changes still require manual testing in an interactive Windows environment.
+Windows command quoting and Windows Terminal capability fail for different reasons. Keep their tests separate: command tests protect the fixed Ruby bootstrap and encoded rerun target from `cmd.exe`, while terminal-color tests cover environment checks and Fiddle failures. When Wine and `winegcc` are installed, the command test compiles a small argv printer and exercises this boundary on Linux; Windows also runs the complete decode through native Ruby. Native console-handle selection and Virtual Terminal mode changes still require manual testing in an interactive Windows environment.
 
 ## Packaging and documentation
 

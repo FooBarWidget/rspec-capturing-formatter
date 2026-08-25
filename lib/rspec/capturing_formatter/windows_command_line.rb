@@ -2,23 +2,35 @@
 
 module RSpec
   class CapturingFormatter
-    # Produces arguments that survive cmd.exe passes and final Windows argv parsing.
+    # Builds rerun commands without exposing dynamic targets to cmd.exe parsing.
     module WindowsCommandLine
-      # Protect characters that cmd.exe interprets while parsing each layer.
-      CMD_META = "()[]%!^\"`<>&|;, *?\t"
+      DECODE_ARGUMENT = 'ARGV[0]=ARGV.fetch(0).unpack1("m0").force_encoding("UTF-8")'
+      RUN_RSPEC = 'load(Gem.bin_path("rspec-core","rspec"))'
+
+      # Protect characters that cmd.exe interprets while parsing a pasted command.
+      CMD_META = "()[]^\"`<>&|;, *?\t"
 
       module_function
 
-      # `cmd_layers` is the number of `cmd.exe` parsing passes the argument must
-      # survive, in addition to the final Windows argv parsing.
-      # Forwarding `%*` through a batch file adds a pass.
-      def escape(value, cmd_layers: 1)
-        value = value.to_s
-        if value.match?(/[\0\r\n]/)
-          raise ArgumentError, "Windows command arguments cannot contain NUL or newlines"
+      def rerun_command(value)
+        encoded_ruby_command(RUN_RSPEC, value)
+      end
+
+      # Dynamic values are encoded because cmd.exe expands paired percent signs
+      # and exclamation marks before an executable can receive them.
+      def encoded_ruby_command(script, value)
+        value = valid_value(value).encode(Encoding::UTF_8)
+        bootstrap = "#{DECODE_ARGUMENT};#{script}"
+        "ruby -e #{escape(bootstrap)} #{[value].pack("m0")}"
+      end
+
+      def escape(value)
+        value = valid_value(value)
+        if value.match?(/[%!]/)
+          raise ArgumentError, "dynamic cmd.exe arguments containing percent signs or exclamation marks must be encoded"
         end
 
-        # Build Windows argv quoting before escaping each cmd.exe layer. A literal
+        # Build Windows argv quoting before escaping the cmd.exe layer. A literal
         # quote needs 2n + 1 backslashes; a closing quote after n backslashes needs 2n.
         quoted = +'"'
         backslashes = 0
@@ -35,30 +47,19 @@ module RSpec
         end
         quoted << ("\\" * (backslashes * 2)) << '"'
 
-        return quoted if cmd_layers <= 0
-
-        # `%*` substitution does not rescan inserted percent signs, so only the
-        # outer pasted-command layer must protect them. Other metacharacters need
-        # protection at every layer.
-        (cmd_layers - 1).times do
-          quoted = quoted.each_char.map do |character|
-            if character == "%"
-              character
-            else
-              CMD_META.include?(character) ? "^#{character}" : character
-            end
-          end.join
-        end
         quoted.each_char.map do |character|
           CMD_META.include?(character) ? "^#{character}" : character
         end.join
       end
 
-      # The Windows RubyGems `rspec` batch launcher forwards `%*`, so rerun
-      # arguments pass through two cmd.exe parsing layers.
-      def rerun_argument(value)
-        escape(value, cmd_layers: 2)
+      def valid_value(value)
+        value = value.to_s
+        if value.match?(/[\0\r\n]/)
+          raise ArgumentError, "Windows command arguments cannot contain NUL or newlines"
+        end
+        value
       end
+      private_class_method :valid_value
     end
   end
 end
