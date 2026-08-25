@@ -12,7 +12,7 @@ RSpec.describe RSpec::CapturingFormatter::WindowsCommandLine do
     expect(escaped).to include('C:\Program')
     expect(escaped).not_to include("C:\\\\Program")
     expect(trailing).to include('C:\specs\\')
-    expect(described_class.escape("%RBF_SENTINEL%", cmd_layers: 2)).to include("%%%%")
+    expect(described_class.escape("%RBF_SENTINEL%", cmd_layers: 2)).to include("^%RBF_SENTINEL^%")
     expect(described_class.rerun_argument("C:\\Program Files\\car.rb")).to eq(
       described_class.escape("C:\\Program Files\\car.rb", cmd_layers: 2)
     )
@@ -23,12 +23,13 @@ RSpec.describe RSpec::CapturingFormatter::WindowsCommandLine do
     expect { described_class.escape("spec.rb\0next") }.to raise_error(ArgumentError)
   end
 
-  it "round-trips special arguments through native cmd.exe" do
+  it "round-trips special arguments through native cmd.exe", :aggregate_failures do
     skip "Windows-only command-line round trip" unless Gem.win_platform?
 
     Dir.mktmpdir("capturing-formatter-cmd") do |directory|
       printer = File.join(directory, "argv_printer.rb")
       launcher = File.join(directory, "rspec.bat")
+      output = File.join(directory, "argv.json")
       File.write(printer, "require 'json'; STDOUT.write(JSON.generate(ARGV))")
       File.write(launcher, "@echo off\r\n\"#{RbConfig.ruby}\" \"#{printer}\" %*\r\n")
       values = [
@@ -42,16 +43,17 @@ RSpec.describe RSpec::CapturingFormatter::WindowsCommandLine do
       values.each do |value|
         command = "rspec.bat #{described_class.rerun_argument(value)}"
         # Keep !RBF_SENTINEL! literal through delayed expansion, the interactive
-        # shell, and the batch launcher's `%*` forwarding.
-        stdout, stderr, status = Open3.capture3(
+        # shell, and the batch launcher's `%*` forwarding. Redirect the JSON so
+        # the interactive shell's banner and prompt do not affect the assertion.
+        _stdout, stderr, status = Open3.capture3(
           {"RBF_SENTINEL" => "EXPANDED"},
           ENV.fetch("COMSPEC", "cmd.exe"), "/d", "/v:on", "/q",
           chdir: directory,
-          stdin_data: "#{command}\r\nexit\r\n"
+          stdin_data: "#{command} > \"#{output}\"\r\nexit\r\n"
         )
 
         expect(status).to be_success, stderr
-        expect(JSON.parse(stdout)).to eq([value])
+        expect(JSON.parse(File.binread(output))).to eq([value])
       end
     end
   end

@@ -5,8 +5,6 @@ module RSpec
     # Produces arguments that survive cmd.exe passes and final Windows argv parsing.
     module WindowsCommandLine
       # Protect characters that cmd.exe interprets while parsing each layer.
-      # Percent signs are doubled instead of caret-escaped because a caret does
-      # not prevent percent expansion.
       CMD_META = "()[]%!^\"`<>&|;, *?\t"
 
       module_function
@@ -37,16 +35,23 @@ module RSpec
         end
         quoted << ("\\" * (backslashes * 2)) << '"'
 
-        cmd_layers.times do
+        return quoted if cmd_layers <= 0
+
+        # `%*` substitution does not rescan inserted percent signs, so only the
+        # outer pasted-command layer must protect them. Other metacharacters need
+        # protection at every layer.
+        (cmd_layers - 1).times do
           quoted = quoted.each_char.map do |character|
             if character == "%"
-              "%%"
+              character
             else
               CMD_META.include?(character) ? "^#{character}" : character
             end
           end.join
         end
-        quoted
+        quoted.each_char.map do |character|
+          CMD_META.include?(character) ? "^#{character}" : character
+        end.join
       end
 
       # The Windows RubyGems `rspec` batch launcher forwards `%*`, so rerun

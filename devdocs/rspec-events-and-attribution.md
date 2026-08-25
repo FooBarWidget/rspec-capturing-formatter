@@ -30,12 +30,6 @@ RSpec may provide formatted failure details for an expected pending example. The
 
 For failures, the formatter asks the notification for `fully_formatted_lines` and supplies its own colorizer when supported. This preserves RSpec's source extraction, filtered backtraces, aggregate failures, shared-example traces, causes, and extra failure lines. Older RSpec APIs may not accept a colorizer. In that case, the formatter uses the available message lines or calls the presenter without one. When it uses `fully_formatted_lines`, it removes the first line only if that line exactly matches the example's full description after ANSI codes are removed.
 
-## Rerun targets
-
-Rerun commands prefer `location_rerun_argument`, then location, then example id according to the APIs available. If more than one example has the same rerun location, the example id is used to disambiguate it. Failed commands are deduplicated in the final list.
-
-POSIX arguments use `Shellwords.escape`. Windows arguments pass through `WindowsCommandLine`, which rejects NUL and newlines and protects both ordinary command-line quoting and `cmd.exe` metacharacters. Rerun arguments use two `cmd.exe` escaping layers because RubyGems invokes `rspec` through a batch launcher that forwards `%*`.
-
 ## Final report requests
 
 The summary notification supplies final counts, suite duration, load time, and errors outside examples. The renderer emits the summary, unique failed reruns, and the stored seed when random ordering was actually used. Errors outside examples are reported separately and do not increase the example total.
