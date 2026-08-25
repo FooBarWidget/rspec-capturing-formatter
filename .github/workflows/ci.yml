@@ -14,18 +14,27 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.4"
+          ruby-version: "4.0"
           bundler-cache: true
 
       - run: bundle exec standardrb
 
   test:
-    name: Test ${{ matrix.os }} RSpec ${{ matrix.rspec }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-26.04, windows-2025]
-        rspec: ["3_12", "3_13", "4_0"]
+        os:
+          - ubuntu-26.04
+          - windows-2025
+        ruby:
+          - "3.2"
+          - "4.0"
+          - jruby
+        rspec:
+          - 3_12
+          - 3_13
+          - 4_0
+
     env:
       BUNDLE_GEMFILE: gemfiles/rspec_${{ matrix.rspec }}.gemfile
     runs-on: ${{ matrix.os }}
@@ -33,7 +42,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@v1
         with:
-          ruby-version: "3.4"
+          ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
           bundler: default # Test compatibility with Ruby-default bundler
 
