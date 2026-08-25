@@ -42,7 +42,16 @@ Failed examples
 
 Color and emphasis are omitted from this example. Actual output uses color and emoji when supported.
 
-On Windows, rerun lines invoke Ruby directly and contain a Base64-encoded target. Encoding keeps valid path characters such as `%` and `!` from being expanded by `cmd.exe`; the command decodes the target before starting RSpec.
+> [!NOTE]
+> On Windows, rerun lines look super weird, like this:
+>
+> ```
+>   rerun  | ruby -e ^"ARGV^[0^]=ARGV.fetch^(0^).unpack1^(\^"m0\^"^).force_encoding^(\^"UTF-8\^"^)^;load^(Gem.bin_path^(\^"rspec-core\^"^,\^"rspec\^"^)^)^" Li9zcGVjL3VuaXQvd2luZG93c19jb21tYW5kX2xpbmVfc3BlYy5yYjo3Ng==
+> ```
+>
+> This is because Windows cmd.exe escaping rules are super complicated. On Windows, RubyGems-installed commands such as `rspec` are actually `.bat` files, thus involving multiple layers of cmd.exe quoting. It's not as straightforward as on Unix where you just escape the value multiple times.
+>
+> So I gave up. On Windows, rerun commands invoke Ruby directly and contain a Base64-encoded target that doesn't produce any escaping issues. It looks weird, but it works. The LLM gave up trying to solve this problem "properly" after many hours of runs. If you care to improve this, a pull request (with extensive tests) is welcome.
 
 ## Usage
 
