@@ -14,7 +14,7 @@ RSpec.describe "the formatter integration" do
     version = versions.fetch(versions.index { |name, _| name == "rspec-core" }).last
     loader = versions.map { |name, value| "gem \"#{name}\", \"#{value}\"" }.join("; ")
     loader = "#{loader}; load Gem.bin_path(\"rspec-core\", \"rspec\", \"#{version}\")"
-    [RbConfig.ruby, "-I#{File.expand_path("../../lib", __dir__)}", "-e", loader, "--", *arguments]
+    [RbConfig.ruby, "-I#{File.absolute_path("../../lib", __dir__)}", "-e", loader, "--", *arguments]
   end
 
   it "captures logs, attributes hooks, and reconciles results" do
@@ -22,7 +22,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/basic_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/basic_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -54,7 +54,7 @@ RSpec.describe "the formatter integration" do
       original_stderr = $stderr
       require "rspec/capturing_formatter"
       require "rspec/core/sandbox"
-      fixture = #{File.expand_path("../fixtures/configured_fixture.rb", __dir__).inspect}
+      fixture = #{File.absolute_path("../fixtures/configured_fixture.rb", __dir__).inspect}
 
       2.times do |index|
         status = nil
@@ -68,7 +68,7 @@ RSpec.describe "the formatter integration" do
       puts "streams restored"
     RUBY
     stdout, stderr, status = Open3.capture3(
-      RbConfig.ruby, "-I#{File.expand_path("../../lib", __dir__)}", "-e", script
+      RbConfig.ruby, "-I#{File.absolute_path("../../lib", __dir__)}", "-e", script
     )
 
     expect(status).to be_success, stderr + stdout
@@ -94,7 +94,7 @@ RSpec.describe "the formatter integration" do
       abort "stderr not restored" unless $stderr.equal?(original_stderr)
     RUBY
     stdout, stderr, status = Open3.capture3(
-      RbConfig.ruby, "-I#{File.expand_path("../../lib", __dir__)}", "-e", script
+      RbConfig.ruby, "-I#{File.absolute_path("../../lib", __dir__)}", "-e", script
     )
 
     expect(status).to be_success, stdout + stderr
@@ -105,7 +105,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/matcher_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/matcher_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -125,7 +125,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/hooks_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/hooks_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -147,7 +147,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/pending_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/pending_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -164,7 +164,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/pending_skip_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/pending_skip_fixture.rb", __dir__)
     )
     skip_stdout, skip_stderr, skip_status = Open3.capture3(*skip_command)
     skip_output = skip_stdout + skip_stderr
@@ -173,7 +173,7 @@ RSpec.describe "the formatter integration" do
     expect(skip_output).not_to include("hidden expected failure")
 
     backtrace_command = skip_command.dup
-    backtrace_command[-1] = File.expand_path("../fixtures/pending_backtrace_fixture.rb", __dir__)
+    backtrace_command[-1] = File.absolute_path("../fixtures/pending_backtrace_fixture.rb", __dir__)
     backtrace_command[backtrace_command.index("--no-color")] = "--force-color"
     backtrace_stdout, backtrace_stderr, backtrace_status = Open3.capture3(*backtrace_command)
     backtrace_output = backtrace_stdout + backtrace_stderr
@@ -187,7 +187,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/failure_metadata_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/failure_metadata_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -209,7 +209,7 @@ RSpec.describe "the formatter integration" do
           "--format", "json",
           "--out", json_report.path,
           "--no-color",
-          File.expand_path("../fixtures/hooks_fixture.rb", __dir__)
+          File.absolute_path("../fixtures/hooks_fixture.rb", __dir__)
         )
         stdout, stderr, status = Open3.capture3(*command)
 
@@ -225,7 +225,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/logger_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/logger_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -240,7 +240,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/thread_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/thread_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -254,7 +254,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/binary_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/binary_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -268,7 +268,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/encoding_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/encoding_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -282,7 +282,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/fixed_pending_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/fixed_pending_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -296,7 +296,7 @@ RSpec.describe "the formatter integration" do
     command = rspec_command(
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
-      File.expand_path("../fixtures/configured_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/configured_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -310,7 +310,7 @@ RSpec.describe "the formatter integration" do
     command = rspec_command(
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
-      File.expand_path("../fixtures/basic_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/basic_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     expect(status).not_to be_success, stdout + stderr
@@ -328,7 +328,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/deprecation_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/deprecation_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -343,7 +343,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/after_stop_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/after_stop_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -359,7 +359,7 @@ RSpec.describe "the formatter integration" do
       "--format", "RSpec::CapturingFormatter",
       "--profile", "1",
       "--no-color",
-      File.expand_path("../fixtures/profile_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/profile_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -379,7 +379,7 @@ RSpec.describe "the formatter integration" do
       "--format", "RSpec::CapturingFormatter",
       "--profile", "0",
       "--no-color",
-      File.expand_path("../fixtures/profile_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/profile_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -394,7 +394,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/slow_pending_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/slow_pending_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -408,7 +408,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/slow_skipped_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/slow_skipped_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -422,7 +422,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/duplicate_location_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/duplicate_location_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -437,7 +437,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/aggregate_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/aggregate_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -452,7 +452,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/shared_example_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/shared_example_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -469,7 +469,7 @@ RSpec.describe "the formatter integration" do
       "--order", "rand:123",
       "--tag", "focus",
       "--no-color",
-      File.expand_path("../fixtures/hooks_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/hooks_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -486,7 +486,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/hook_error_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/hook_error_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -502,7 +502,7 @@ RSpec.describe "the formatter integration" do
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       "--no-color",
-      File.expand_path("../fixtures/context_hook_error_fixture.rb", __dir__)
+      File.absolute_path("../fixtures/context_hook_error_fixture.rb", __dir__)
     )
     stdout, stderr, status = Open3.capture3(*command)
     output = stdout + stderr
@@ -524,7 +524,7 @@ RSpec.describe "the formatter integration" do
       require "rspec/capturing_formatter"
       status = RSpec::Core::Runner.run([
         "--format", "RSpec::CapturingFormatter", "--no-color", "--order", "defined", "--fail-fast=1",
-        #{File.expand_path("../fixtures/fail_fast_fixture.rb", __dir__).inspect}
+        #{File.absolute_path("../fixtures/fail_fast_fixture.rb", __dir__).inspect}
       ])
       abort "expected failure" unless status == 1
       abort "stdout not restored" unless $stdout.equal?(original_stdout)
@@ -532,7 +532,7 @@ RSpec.describe "the formatter integration" do
       puts "after fail fast"
     RUBY
     stdout, stderr, status = Open3.capture3(
-      RbConfig.ruby, "-I#{File.expand_path("../../lib", __dir__)}", "-e", script
+      RbConfig.ruby, "-I#{File.absolute_path("../../lib", __dir__)}", "-e", script
     )
     output = stdout + stderr
 
@@ -547,7 +547,7 @@ RSpec.describe "the formatter integration" do
       gem_path = File.join(directory, "rspec-capturing-formatter.gem")
       build_stdout, build_stderr, build_status = Open3.capture3(
         "gem", "build", "rspec-capturing-formatter.gemspec", "--output", gem_path,
-        chdir: File.expand_path("../..", __dir__)
+        chdir: File.absolute_path("../..", __dir__)
       )
       expect(build_status).to be_success, build_stdout + build_stderr
 
@@ -570,7 +570,7 @@ RSpec.describe "the formatter integration" do
           RbConfig.ruby, "-I#{File.join(installed_gem_dir, "lib")}", "-e",
           <<~RUBY
             require "rspec/capturing_formatter"
-            installed_gem_dir = File.expand_path(ENV.fetch("INSTALLED_GEM_DIR"))
+            installed_gem_dir = File.absolute_path(ENV.fetch("INSTALLED_GEM_DIR"))
             installed_formatter_path = File.join(installed_gem_dir, "lib", "rspec", "capturing_formatter.rb")
             abort "did not load the installed gem: \#{installed_formatter_path}" unless $LOADED_FEATURES.include?(installed_formatter_path)
           RUBY

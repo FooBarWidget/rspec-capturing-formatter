@@ -1,7 +1,7 @@
 require "spec_helper"
 
 RSpec.describe "the developer handbook" do
-  let(:directory) { File.expand_path("../../devdocs", __dir__) }
+  let(:directory) { File.absolute_path("../../devdocs", __dir__) }
 
   it "keeps every table-of-contents link valid" do
     table_of_contents = File.read(File.join(directory, "README.md"))
