@@ -31,3 +31,23 @@ task :spec do
     rspec_args
   ].flatten.compact.map { |x| Shellwords.escape(x) }.join(" ")
 end
+
+desc "Run bundle install for all Gemfiles"
+task :bundle_install_all do
+  Bundler.with_unbundled_env do
+    sh "bundle install"
+    Dir["gemfiles/*.gemfile"].each do |gemfile|
+      sh "env BUNDLE_GEMFILE=#{Shellwords.escape(gemfile)} bundle install"
+    end
+  end
+end
+
+desc "Run bundle update for all Gemfiles"
+task :bundle_update_all do
+  Bundler.with_unbundled_env do
+    sh "bundle update --all"
+    Dir["gemfiles/*.gemfile"].each do |gemfile|
+      sh "env BUNDLE_GEMFILE=#{Shellwords.escape(gemfile)} bundle update --all"
+    end
+  end
+end
