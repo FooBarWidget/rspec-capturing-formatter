@@ -60,6 +60,11 @@ jobs:
           bundler-cache: true
           bundler: default # Test compatibility with Ruby-default bundler
 
+      - run: sudo apt update && sudo apt install -y wine libwine-dev
+        if: |-
+          !contains(matrix.os, 'windows')
+        timeout-minutes: 10
+
       - run: bundle exec rake spec FORCE_COLOR=1
         timeout-minutes: 10
 

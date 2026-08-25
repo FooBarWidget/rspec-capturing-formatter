@@ -9,6 +9,7 @@ Please read [developer handbook](devdocs/README.md) to learn how the codebase wo
 - Test with `bundle exec rake spec`
 - Test specific RSpec version compatibility: `bundle exec rake spec BUNDLE_GEMFILE=gemfiles/rspec_<VERSION>.gemfile`
 - This codebase uses Standard Ruby. Check for conformance: `bundle exec standardrb`
+- If you're not on Windows, then it's recommended that you install wine and winegcc (Debian/Ubuntu: `apt install wine libwine-dev`). This allows running certain Windows quoting tests on non-Windows.
 
 ## Notes about AI usage
 
