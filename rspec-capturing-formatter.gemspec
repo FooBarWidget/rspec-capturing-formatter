@@ -15,9 +15,9 @@ Gem::Specification.new do |spec|
   # After updating dependencies, run `bundle exec rake bundle:install -m`
   # to sync all Bundler lockfiles.
 
+  # NOTE: don't specify dependencies on default gems such as shellwords, stringio, json
+
   spec.add_runtime_dependency "rspec-core", ">= 3.12"
-  spec.add_runtime_dependency "shellwords"
-  spec.add_runtime_dependency "stringio"
 
   # Below section is for dev dependencies that are *simultaneously* used by all of these:
   # - main Rake+RSpec invocation
@@ -28,8 +28,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake"
   spec.add_development_dependency "fiddle"
   spec.add_development_dependency "logger"
-  spec.add_development_dependency "open3"
-  spec.add_development_dependency "tempfile"
-  spec.add_development_dependency "tmpdir"
-  spec.add_development_dependency "json"
 end
