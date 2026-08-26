@@ -27,6 +27,8 @@ Optimize for the underlying goal, not literal compliance. Continuously check whe
 
 Use judgment to handle low-impact problems autonomously and mention noteworthy ones afterward.
 
+When progress stalls or complexity grows unexpectedly, stop and broaden the search space instead of iterating mechanically. Reconsider the approach itself and proactively explore materially different strategies—such as simplifying or reframing the problem, improving reproduction or observability, using existing tools/libraries, or changing assumptions or constraints.
+
 # Documentation style
 
 - Use natural, plain English. Use sentence case for headings. Do not cap line widths.
