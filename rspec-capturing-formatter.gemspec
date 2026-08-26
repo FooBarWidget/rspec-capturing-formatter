@@ -28,4 +28,8 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rake"
   spec.add_development_dependency "fiddle"
   spec.add_development_dependency "logger"
+  spec.add_development_dependency "open3"
+  spec.add_development_dependency "tempfile"
+  spec.add_development_dependency "tmpdir"
+  spec.add_development_dependency "json"
 end
