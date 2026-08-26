@@ -227,7 +227,7 @@ module RSpec
         return if text.empty?
 
         # Once application SGR appears, formatter source color stays off until the capture boundary.
-        @capture_styled = true if text.match?(/\e\[[0-?]*[ -\/]*m/)
+        @capture_styled = true if text.match?(/\e\[[0-?]*+[ -\/]*+m/)
 
         begin_entry unless @entry_started
         prefix = style("  #{source} | ", SOURCE_COLORS[source])
@@ -377,7 +377,7 @@ module RSpec
       end
 
       def strip_sgr(value)
-        value.gsub(/\e\[[0-?]*[ -\/]*m/, "")
+        value.gsub(/\e\[[0-?]*+[ -\/]*+m/, "")
       end
 
       def status_label(status)

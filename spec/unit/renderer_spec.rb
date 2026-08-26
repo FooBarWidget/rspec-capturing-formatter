@@ -78,6 +78,16 @@ RSpec.describe RSpec::CapturingFormatter::Renderer do
     expect(output.string).to include("\e[90m  stdout | \e[0m\e[31mred output\e[0m\e[0m\n")
   end
 
+  it "handles long incomplete SGR-like text without excessive backtracking" do
+    value = "\e[" + ("0" * 100_000) + "x"
+    renderer = described_class.new(output, configuration, ansi_supported: false)
+
+    # Bypass Sanitizer so this exercises both renderer regexes with the reported input shape.
+    renderer.send(:emit_captured_text, "stdout", value)
+
+    expect(output.string).to include(value)
+  end
+
   it "omits formatter and application colors when ANSI is unsupported" do
     configuration.color = true
     renderer = described_class.new(output, configuration, ansi_supported: false)

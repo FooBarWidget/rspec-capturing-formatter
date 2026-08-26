@@ -293,7 +293,7 @@ module RSpec
     end
 
     def strip_ansi(value)
-      value.gsub(/\e\[[0-?]*[ -\/]*[@-~]/, "")
+      value.gsub(/\e\[[0-?]*+[ -\/]*+[@-~]/, "")
     end
   end
 
