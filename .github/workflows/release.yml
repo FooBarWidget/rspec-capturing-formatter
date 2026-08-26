@@ -1,9 +1,7 @@
 name: Release
 
 on:
-  push:
-    tags:
-      - "release-*"
+  workflow_dispatch: {}
 
 jobs:
   release:
@@ -26,19 +24,13 @@ jobs:
           ruby-version: "4.0"
           bundler-cache: false # Prevent cache poisoning by pull requests
 
-      - name: Verify version number
+      - name: Get version number
         id: get_version
         run: |
-          VERSION_STRING=$(ruby -r ./lib/rspec/capturing_formatter/version.rb -e "puts RSpec::CapturingFormatter::VERSION")
-          if ! [[ "$GITHUB_REF_NAME" =~ ^release- ]]; then
-            echo "Tag name must start with a 'release-'."
-            exit 1
-          fi
-          if [[ "$GITHUB_REF_NAME" != "release-${VERSION_STRING}" ]]; then
-            echo "Tag version ($GITHUB_REF_NAME) does not match version.rb ($VERSION_STRING)"
-            exit 1
-          fi
+          VERSION=$(ruby -r ./lib/rspec/capturing_formatter/version.rb -e "puts RSpec::CapturingFormatter::VERSION")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
+      # Creates a tag too: vX.X.X
       - uses: rubygems/release-gem@7f9650160c1a4e7989fdc9855807bdbd421d8b6b # v1.4.1
 
       - name: Create attestation
@@ -47,6 +39,7 @@ jobs:
           subject-path: "pkg/*.gem"
 
       - name: Create GitHub release
-        run: gh release create "$GITHUB_REF_NAME" pkg/*.gem --title "$GITHUB_REF_NAME" --notes-from-tag
+        run: gh release create "v$VERSION" pkg/*.gem --title "$VERSION" --notes-from-tag
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.get_version.outputs.version }}
