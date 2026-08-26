@@ -72,6 +72,19 @@ jobs:
         run: bundle exec rake spec DOGFOOD=1 FORCE_COLOR=1
         timeout-minutes: 10
 
+  # Only passes if the entire test matrix passes. Used as a Github branch/tag protection check.
+  test_summary:
+    needs: test
+    runs-on: ubuntu-26.04
+    timeout-minutes: 1
+    # Trigger only on push (internal branches) or on PRs from forks.
+    # Avoids duplicate runs on PRs from internal branches.
+    if: >
+      (github.event_name != 'pull_request' && github.event_name != 'pull_request_target')
+      || github.event.pull_request.head.repo.full_name != github.event.pull_request.base.repo.full_name
+    steps:
+      - run: "true"
+
   lint-build-audit:
     runs-on: ubuntu-26.04
     timeout-minutes: 10
