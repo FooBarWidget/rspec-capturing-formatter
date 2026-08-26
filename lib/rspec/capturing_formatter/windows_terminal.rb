@@ -13,8 +13,8 @@ module RSpec
       class << self
         # Redirected output remains ANSI-capable; interactive output requires Windows Terminal and VT support.
         # Fiddle failures fall back to plain text, while unrelated errors propagate.
-        def ansi_supported?(output, platform: Gem.win_platform?, env: ENV, api: nil)
-          return true unless platform
+        def ansi_supported?(output, on_windows: Gem.win_platform?, env: ENV, api: nil)
+          return true unless on_windows
 
           begin
             return true unless tty?(output)
