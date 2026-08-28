@@ -24,6 +24,11 @@ jobs:
           ruby-version: "4.0"
           bundler-cache: false # Prevent cache poisoning by pull requests
 
+      - name: Install dependencies
+        run: bundle install
+        env:
+          BUNDLE_JOBS: "4"
+
       - name: Get version number
         id: get_version
         run: |
