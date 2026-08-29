@@ -30,3 +30,5 @@ The sanitizer preserves valid SGR so application styling can survive capture. Wh
 When formatter color is enabled, stdout and suite-stdout labels and unstyled payload use gray, while stderr and suite-stderr use yellow. Once a captured entry contains application SGR, the renderer stops wrapping later payload in a formatter source color for the remainder of that capture entry.
 
 The renderer writes resets at formatter-owned and captured-content boundaries. It also resets after captured application styling even when formatter color itself is disabled. This prevents application styling from bleeding into statuses, failures, summaries, or later entries.
+
+The failed-example heading and rerun commands use red when formatter color is enabled.

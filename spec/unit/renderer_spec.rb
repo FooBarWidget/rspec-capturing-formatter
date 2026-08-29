@@ -97,6 +97,17 @@ RSpec.describe RSpec::CapturingFormatter::Renderer do
     expect(output.string).to include("\e[31m  1 total  0 succeeded  1 failed  0 pending\e[0m")
   end
 
+  it "colors the failed examples section red" do
+    configuration.color = true
+
+    renderer.reruns(["rspec spec/car_spec.rb:20"])
+
+    expect(output.string).to eq(
+      "\e[0m\e[31mFailed examples\e[0m\n" \
+      "\e[0m\e[31m  rspec spec/car_spec.rb:20\e[0m\n"
+    )
+  end
+
   it "colors plain stdout and stderr payloads" do
     configuration.color = true
 

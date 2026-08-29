@@ -184,8 +184,8 @@ module RSpec
         begin_entry
         @entry_kind = :reruns
         @entry_path = nil
-        line("Failed examples")
-        commands.each { |command| line("  #{command}") }
+        line("Failed examples", :red)
+        commands.each { |command| line("  #{command}", :red) }
       end
 
       def seed(seed)
