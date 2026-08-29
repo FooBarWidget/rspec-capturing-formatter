@@ -78,14 +78,14 @@ module RSpec
         line("RSpec suite") if heading
       end
 
-      def capture(source, value, encoding = nil)
+      def capture(source, value, encoding = nil, nonblocking: false)
         if @capture_source != source
           finish_capture
           @capture_source = source
         end
 
         text = (@sanitizers[source] ||= Sanitizer.new).process(value, encoding)
-        emit_captured_text(source, text)
+        emit_captured_text(source, text, nonblocking: nonblocking)
       end
 
       def message(lines, inside_example: false)
@@ -222,7 +222,7 @@ module RSpec
 
       private
 
-      def emit_captured_text(source, text)
+      def emit_captured_text(source, text, nonblocking: false)
         text = strip_sgr(text) unless @ansi_supported
         return if text.empty?
 
@@ -250,7 +250,7 @@ module RSpec
 
         @capture_open = true unless text.end_with?("\n")
         @capture_open = false if text.end_with?("\n")
-        write_raw(rendered)
+        write_raw(rendered, nonblocking: nonblocking)
       end
 
       def captured_part(source, value)
@@ -273,12 +273,13 @@ module RSpec
         write_raw("\n")
       end
 
-      def write_raw(value)
+      def write_raw(value, nonblocking: false)
         return if value.nil? || value.empty?
 
         text = encode_for_output(value)
         if @pending_output.nil? || @pending_output.empty?
           @pending_output = text.dup
+          @pending_output_nonblocking = nonblocking
         else
           @pending_output << text
         end
@@ -303,7 +304,7 @@ module RSpec
       end
 
       def write_pending_chunk
-        if @output.respond_to?(:write_nonblock)
+        if @pending_output_nonblocking && @output.respond_to?(:write_nonblock)
           written = @output.write_nonblock(@pending_output)
           raise Errno::EAGAIN if written == :wait_writable
 

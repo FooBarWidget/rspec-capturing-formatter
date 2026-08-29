@@ -80,6 +80,13 @@ RSpec.describe RSpec::CapturingFormatter do
       Encoding::UTF_8
     end
 
+    def write(value)
+      raise "ordinary write used while nonblocking output is pending" unless @state == :done
+
+      @value << value
+      value.bytesize
+    end
+
     def write_nonblock(value, exception: true)
       if @state == :partial
         @state = :wait

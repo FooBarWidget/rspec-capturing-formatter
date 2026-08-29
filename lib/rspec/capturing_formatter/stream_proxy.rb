@@ -116,7 +116,12 @@ module RSpec
             proxy.write_backing(value, method, **options)
           else
             begin
-              @formatter.capture(proxy.source, value, value.encoding)
+              @formatter.capture(
+                proxy.source,
+                value,
+                value.encoding,
+                nonblocking: nonblocking_method?(method)
+              )
             rescue IO::WaitWritable, Errno::EAGAIN
               @pending_nonblock[proxy] = value if nonblocking_method?(method)
               raise

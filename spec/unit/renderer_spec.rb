@@ -2,6 +2,34 @@ require "spec_helper"
 require "stringio"
 
 RSpec.describe RSpec::CapturingFormatter::Renderer do
+  # Keep this test double scoped to the example group.
+  # standard:disable Lint/ConstantDefinitionInBlock
+  class EagainNonblockingOutput
+    attr_reader :value
+
+    def initialize
+      @value = +""
+    end
+
+    def external_encoding
+      Encoding::UTF_8
+    end
+
+    def write(value)
+      @value << value
+      value.bytesize
+    end
+
+    def write_nonblock(*)
+      raise Errno::EAGAIN
+    end
+
+    def flush
+      self
+    end
+  end
+  # standard:enable Lint/ConstantDefinitionInBlock
+
   let(:output) { StringIO.new }
   let(:configuration) do
     RSpec::CapturingFormatter::Configuration.new.tap do |value|
@@ -10,6 +38,17 @@ RSpec.describe RSpec::CapturingFormatter::Renderer do
     end
   end
   subject(:renderer) { described_class.new(output, configuration) }
+
+  it "uses blocking writes for formatter output even when the destination supports nonblocking writes" do
+    output = EagainNonblockingOutput.new
+    renderer = described_class.new(output, configuration)
+
+    renderer.example_started("A car › it is red")
+    renderer.capture("stdout", "log\n")
+    renderer.result(:passed, 0.01)
+
+    expect(output.value).to include("A car › it is red\n  stdout | log\n  [PASS] succeeded\n")
+  end
 
   it "keeps formatter entries append-only with one blank line between them" do
     renderer.example_started("A car › it is red")

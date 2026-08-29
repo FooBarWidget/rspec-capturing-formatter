@@ -163,14 +163,14 @@ module RSpec
       with_capture_lock { @manager.deactivate(@lease) }
     end
 
-    def capture(source, value, encoding)
+    def capture(source, value, encoding, nonblocking: false)
       with_capture_lock do
         if @current_example
-          @renderer.capture(source.to_s, value, encoding)
+          @renderer.capture(source.to_s, value, encoding, nonblocking: nonblocking)
         else
           ensure_suite_or_context
           label = (source == :stdout) ? "suite stdout" : "suite stderr"
-          @renderer.capture(label, value, encoding)
+          @renderer.capture(label, value, encoding, nonblocking: nonblocking)
         end
       end
     end
