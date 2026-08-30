@@ -65,7 +65,7 @@ module RSpec
         begin_entry
         @entry_kind = :context
         @entry_path = path
-        line(path) if heading
+        line(path, :bold) if heading
       end
 
       def suite_started(heading: true)

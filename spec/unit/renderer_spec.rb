@@ -70,6 +70,14 @@ RSpec.describe RSpec::CapturingFormatter::Renderer do
     expect(output.string).to eq("\e[0m\e[1mA car › it is red\e[0m\n")
   end
 
+  it "prints context descriptions in bold when color is enabled" do
+    configuration.color = true
+
+    renderer.context_started("A car › during maintenance")
+
+    expect(output.string).to eq("\e[0m\e[1mA car › during maintenance\e[0m\n")
+  end
+
   it "colors durations that meet the slow threshold pink" do
     configuration.color = true
 
