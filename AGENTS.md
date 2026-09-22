@@ -19,7 +19,7 @@ When progress stalls or complexity grows unexpectedly, stop iterating on the cur
 # Testing procedures
 
 - Test with `bundle exec rake spec`
-  - Test specific RSpec version compatibility: `bundle exec rake spec BUNDLE_GEMFILE=gemfiles/rspec_*.gemfile`
+  - Test specific RSpec version compatibility: `BUNDLE_GEMFILE=gemfiles/rspec_XXX.gemfile bundle exec rake spec` (be sure to set the right version)
   - Test specific spec file: `bundle exec rake spec FILE=spec/unit/lease_spec.rb:23`
   - Test specific example: `bundle exec rake spec EXAMPLE=EAGAIN` (passed to `rspec -e`)
   - Run test suite itself with rspec-capturing-formatter: `bundle exec rake spec DOGFOOD=1`
