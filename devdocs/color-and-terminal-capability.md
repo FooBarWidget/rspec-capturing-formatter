@@ -4,14 +4,15 @@ The formatter separates a user's color preference from the destination's ability
 
 ## Preference and capability
 
-Formatter color is enabled only when all of these conditions hold:
+The renderer first checks platform capability, then applies the effective color policy. Formatter color is enabled only when all of these conditions hold:
 
 - `config.color` is true.
 - `NO_COLOR` is absent or empty.
 - RSpec's color mode is not `:off`.
+- RSpec's color mode is `:on`, `FORCE_COLOR` is non-empty and not `"0"`, or the destination reports `tty?`.
 - The destination supports ANSI according to the platform policy.
 
-On non-Windows platforms, ANSI is allowed for both terminal and redirected destinations. On Windows, redirected output also keeps ANSI styling so ANSI-aware files and CI logs preserve the configured colors. Interactive output requires a non-empty `WT_SESSION` and successful Virtual Terminal enablement; other interactive Windows consoles receive plain text.
+`FORCE_COLOR=0` is neutral rather than an explicit disable. `NO_COLOR`, `config.color = false`, and RSpec's `--no-color` take precedence over forced color. On non-Windows platforms, redirected output is plain unless forced. On Windows, redirected output is platform-capable but follows the same policy; interactive output requires a non-empty `WT_SESSION` and successful Virtual Terminal enablement, while other interactive Windows consoles receive plain text.
 
 Emoji is a separate decision. Setting `emoji` to false forces deterministic ASCII status labels. The `:auto` and true settings use a glyph only when the destination implements `external_encoding` and either reports no concrete encoding or reports one that can represent the glyph.
 
@@ -25,7 +26,7 @@ Renderer tests can receive a fake terminal-capability checker, while `NativeApi`
 
 ## Captured application styling
 
-The sanitizer preserves valid SGR so application styling can survive capture. When ANSI capability is unavailable, the renderer removes captured SGR along with formatter styling. When capability is available but formatter color preference is off, application SGR remains; formatter color settings do not override the application's own styling policy.
+The sanitizer preserves valid SGR so application styling can survive capture. When effective ANSI is disabled, the renderer removes captured SGR along with formatter styling. When effective ANSI is enabled, application SGR remains and formatter source styling yields to it for the rest of that capture entry.
 
 When formatter color is enabled, stdout and suite-stdout labels and unstyled payload use gray, while stderr and suite-stderr use yellow. Once a captured entry contains application SGR, the renderer stops wrapping later payload in a formatter source color for the remainder of that capture entry.
 

@@ -12,7 +12,8 @@ task :spec do
     rspec_args << "--format"
     rspec_args << "RSpec::CapturingFormatter"
   end
-  if ENV["FORCE_COLOR"]
+  force_color = ENV["FORCE_COLOR"]
+  if force_color && !force_color.empty? && force_color != "0"
     rspec_args << "--force-color"
   end
   if (file = ENV["FILE"])

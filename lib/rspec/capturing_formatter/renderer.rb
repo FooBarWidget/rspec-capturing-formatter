@@ -29,10 +29,11 @@ module RSpec
 
       attr_reader :output
 
-      def initialize(output, configuration, capture_manager: nil, ansi_supported: nil)
+      def initialize(output, configuration, capture_manager: nil, ansi_supported: nil, env: ENV)
         @output = output || StringIO.new
         @configuration = configuration
         @capture_manager = capture_manager
+        @env = env
         @ansi_supported = ansi_supported.nil? ? WindowsTerminal.ansi_supported?(@output) : ansi_supported
         @entry_started = false
         @entry_kind = nil
@@ -223,7 +224,7 @@ module RSpec
       private
 
       def emit_captured_text(source, text, nonblocking: false)
-        text = strip_sgr(text) unless @ansi_supported
+        text = strip_sgr(text) unless color_enabled?
         return if text.empty?
 
         # Once application SGR appears, formatter source color stays off until the capture boundary.
@@ -267,7 +268,7 @@ module RSpec
 
       def line(value, color = nil)
         value = value.to_s
-        value = strip_sgr(value) unless @ansi_supported
+        value = strip_sgr(value) unless color_enabled?
         write_raw(RESET) if color_enabled?
         write_raw(style(value, color))
         write_raw("\n")
@@ -363,11 +364,24 @@ module RSpec
 
       def color_enabled?
         return false unless @ansi_supported
-        return false if ENV["NO_COLOR"] && !ENV["NO_COLOR"].empty?
-        return false if defined?(RSpec) && RSpec.respond_to?(:configuration) &&
-          RSpec.configuration.respond_to?(:color_mode) && RSpec.configuration.color_mode == :off
+        return false unless @configuration.color
+        return false if @env["NO_COLOR"] && !@env["NO_COLOR"].empty?
 
-        @configuration.color
+        color_mode = rspec_color_mode
+        return false if color_mode == :off
+        return true if color_mode == :on
+
+        force_color = @env["FORCE_COLOR"]
+        return true if force_color && !force_color.empty? && force_color != "0"
+
+        @output.respond_to?(:tty?) && @output.tty?
+      end
+
+      def rspec_color_mode
+        return unless defined?(RSpec) && RSpec.respond_to?(:configuration)
+
+        configuration = RSpec.configuration
+        configuration.color_mode if configuration.respond_to?(:color_mode)
       end
 
       def style(value, color)
