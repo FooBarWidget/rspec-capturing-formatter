@@ -98,9 +98,9 @@ RSpec::CapturingFormatter.configure do |config|
 end
 ```
 
-When `config.color == true`, coloring is enabled even when there is no TTY. Coloring is always disabled when `NO_COLOR` or when RSpec's `--no-color` option is set.
+When `config.color == true`, coloring is enabled for TTY destinations and disabled for redirected output by default. `FORCE_COLOR` enables coloring when it is non-empty and not `0`; RSpec's `--force-color` has the same effect. Coloring is always disabled when `NO_COLOR`, `config.color = false`, or RSpec's `--no-color` option is set.
 
-On Windows, interactive coloring is supported in Windows Terminal. Legacy Windows console sessions are not supported color targets and receive plain-text output instead of raw ANSI escape sequences. Redirected reports keep ANSI coloring when enabled, so they can be viewed by ANSI-aware CI logs or tools.
+On Windows, interactive coloring is supported in Windows Terminal. Legacy Windows console sessions are not supported color targets and receive plain-text output instead of raw ANSI escape sequences. Redirected reports are plain by default and remain colored when `FORCE_COLOR` or `--force-color` is used.
 
 ## Output capture limitations
 

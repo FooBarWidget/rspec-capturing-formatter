@@ -28,9 +28,15 @@ RSpec.describe RSpec::CapturingFormatter::Renderer do
       self
     end
   end
+
+  class TtyStringIO < StringIO
+    def tty?
+      true
+    end
+  end
   # standard:enable Lint/ConstantDefinitionInBlock
 
-  let(:output) { StringIO.new }
+  let(:output) { TtyStringIO.new }
   let(:configuration) do
     RSpec::CapturingFormatter::Configuration.new.tap do |value|
       value.color = false
@@ -161,6 +167,47 @@ RSpec.describe RSpec::CapturingFormatter::Renderer do
     expect(output.string).not_to include("\e[")
   end
 
+  it "omits formatter and application colors for non-TTY output" do
+    configuration.color = true
+    allow(RSpec.configuration).to receive(:color_mode).and_return(:automatic)
+    output = StringIO.new
+    renderer = described_class.new(output, configuration, env: {})
+
+    renderer.example_started("A car › it logs")
+    renderer.capture("stdout", "\e[31mred output\e[0m\n")
+    renderer.result(:passed, 0.01)
+
+    expect(output.string).to eq(
+      "A car › it logs\n  stdout | red output\n  [PASS] succeeded\n"
+    )
+    expect(output.string).not_to include("\e[")
+  end
+
+  it "forces formatter and application colors for non-TTY output" do
+    configuration.color = true
+    allow(RSpec.configuration).to receive(:color_mode).and_return(:automatic)
+    output = StringIO.new
+    renderer = described_class.new(output, configuration, env: {"FORCE_COLOR" => "1"})
+
+    renderer.example_started("A car › it logs")
+    renderer.capture("stdout", "\e[31mred output\e[0m\n")
+
+    expect(output.string).to include("\e[31mred output\e[0m")
+    expect(output.string).to include("\e[90m  stdout | ")
+  end
+
+  it "treats FORCE_COLOR=0 as neutral for non-TTY output" do
+    configuration.color = true
+    allow(RSpec.configuration).to receive(:color_mode).and_return(:automatic)
+    output = StringIO.new
+    renderer = described_class.new(output, configuration, env: {"FORCE_COLOR" => "0"})
+
+    renderer.example_started("A car › it logs")
+    renderer.result(:passed, 0.01)
+
+    expect(output.string).not_to include("\e[")
+  end
+
   it "shows qualifying durations for pending and skipped examples" do
     renderer.example_started("A car › it is pending")
     renderer.pending("known issue", "rspec spec/car_spec.rb:1", run_time: 0.75)
@@ -187,12 +234,13 @@ RSpec.describe RSpec::CapturingFormatter::Renderer do
   end
 
   it "resets captured application styling before formatter output" do
+    configuration.color = true
     renderer.example_started("A car › it is red")
     renderer.capture("stdout", "\e[31mred")
     renderer.result(:passed, 0.01)
 
-    expect(output.string).to include("stdout | \e[31mred\e[0m\n")
-    expect(output.string).to include("  [PASS] succeeded\n")
+    expect(output.string).to include("\e[31mred\e[0m\n")
+    expect(output.string).to include("\e[0m  \e[32m[PASS] succeeded\e[0m\n")
   end
 
   it "keeps RSpec messages inside the active example entry" do
@@ -207,11 +255,13 @@ RSpec.describe RSpec::CapturingFormatter::Renderer do
   end
 
   it "resets modern application SGR before formatter-owned status output" do
+    configuration.color = true
     renderer.example_started("A car › it is colorful")
     renderer.capture("stdout", "\e[38:2:255:0:0mred\e[0m\n")
     renderer.result(:passed, 0.01)
 
-    expect(output.string).to include("\e[38:2:255:0:0mred\e[0m\n\e[0m  [PASS]")
+    expect(output.string).to include("\e[38:2:255:0:0mred\e[0m")
+    expect(output.string).to include("\e[0m\e[0m  \e[32m[PASS] succeeded\e[0m")
   end
 
   it "writes valid text to a UTF-16 report destination" do

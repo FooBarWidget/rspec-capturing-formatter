@@ -315,18 +315,56 @@ RSpec.describe "the formatter integration" do
     expect(output).not_to include("\e[")
   end
 
-  it "enables default non-TTY color and honors NO_COLOR" do
+  it "uses TTY-aware color policy and honors explicit disables" do
     command = rspec_command(
       "--require", "rspec/capturing_formatter",
       "--format", "RSpec::CapturingFormatter",
       File.absolute_path("../fixtures/basic_fixture.rb", __dir__)
     )
-    stdout, stderr, status = Open3.capture3(*command)
+    stdout, stderr, status = Open3.capture3(
+      {"FORCE_COLOR" => nil, "NO_COLOR" => nil}, *command
+    )
     expect(status).not_to be_success, stdout + stderr
-    expect(stdout + stderr).to include("\e[")
+    expect(stdout + stderr).not_to include("\e[")
 
+    force_env_stdout, force_env_stderr, force_env_status = Open3.capture3(
+      {"FORCE_COLOR" => "1", "NO_COLOR" => nil}, *command
+    )
+    expect(force_env_status).not_to be_success, force_env_stdout + force_env_stderr
+    expect(force_env_stdout + force_env_stderr).to include("\e[")
+
+    neutral_stdout, neutral_stderr, neutral_status = Open3.capture3(
+      {"FORCE_COLOR" => "0", "NO_COLOR" => nil}, *command
+    )
+    expect(neutral_status).not_to be_success, neutral_stdout + neutral_stderr
+    expect(neutral_stdout + neutral_stderr).not_to include("\e[")
+
+    forced_command = rspec_command(
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
+      "--force-color",
+      File.absolute_path("../fixtures/basic_fixture.rb", __dir__)
+    )
+    forced_stdout, forced_stderr, forced_status = Open3.capture3(
+      {"FORCE_COLOR" => nil, "NO_COLOR" => nil}, *forced_command
+    )
+    expect(forced_status).not_to be_success, forced_stdout + forced_stderr
+    expect(forced_stdout + forced_stderr).to include("\e[")
+
+    disabled_stdout, disabled_stderr, disabled_status = Open3.capture3(
+      {"FORCE_COLOR" => "1", "NO_COLOR" => "1"}, *forced_command
+    )
+    expect(disabled_status).not_to be_success, disabled_stdout + disabled_stderr
+    expect(disabled_stdout + disabled_stderr).not_to include("\e[")
+
+    no_color_command = rspec_command(
+      "--require", "rspec/capturing_formatter",
+      "--format", "RSpec::CapturingFormatter",
+      "--no-color",
+      File.absolute_path("../fixtures/basic_fixture.rb", __dir__)
+    )
     no_color_stdout, no_color_stderr, no_color_status = Open3.capture3(
-      {"NO_COLOR" => "1"}, *command
+      {"FORCE_COLOR" => "1", "NO_COLOR" => nil}, *no_color_command
     )
     expect(no_color_status).not_to be_success, no_color_stdout + no_color_stderr
     expect(no_color_stdout + no_color_stderr).not_to include("\e[")
