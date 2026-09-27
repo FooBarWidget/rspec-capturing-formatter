@@ -10,7 +10,7 @@ on:
       - reopened
       - synchronize
   schedule:
-    - cron: "16 8 * * 0"
+    - cron: "16 8 1 * *"
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
