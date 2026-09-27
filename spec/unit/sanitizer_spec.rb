@@ -50,7 +50,6 @@ RSpec.describe RSpec::CapturingFormatter::Sanitizer do
     expect(utf8.process("aé".encode("UTF-8").byteslice(0, 2))).to eq("a")
     expect(utf8.process("é".encode("UTF-8").byteslice(1, 1))).to eq("é")
 
-    described_class.new
     value = "😀".encode("UTF-16LE")
     (0...value.bytesize).each do |split|
       decoder = described_class.new

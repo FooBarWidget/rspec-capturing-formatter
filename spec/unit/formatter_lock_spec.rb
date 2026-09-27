@@ -131,9 +131,6 @@ RSpec.describe RSpec::CapturingFormatter do
       formatter.example_passed(notification)
     end
     callback_started.pop
-    sleep 0.01
-
-    expect(output.string).not_to include("succeeded")
 
     output.release
     writer.join

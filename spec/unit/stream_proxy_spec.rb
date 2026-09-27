@@ -103,25 +103,22 @@ RSpec.describe RSpec::CapturingFormatter::StreamProxy do
     expect(proxy.fileno).to be_nil
   end
 
-  it "preserves print, putc, and recursive puts behavior" do
+  it "preserves print separators, putc, and recursive puts behavior" do
     original_record_separator = $OUTPUT_RECORD_SEPARATOR
     original_field_separator = $OUTPUT_FIELD_SEPARATOR
-    original_last_line = $_
     $OUTPUT_RECORD_SEPARATOR = "!"
     $OUTPUT_FIELD_SEPARATOR = ","
-    $_ = "last"
     recursive = []
     recursive << recursive
 
-    proxy.print
+    proxy.print("first", "second")
     proxy.putc(300)
     proxy.puts(recursive)
 
-    expect(backing.string).to eq(",[...]\n")
+    expect(backing.string).to eq("first,second!,[...]\n")
   ensure
     $OUTPUT_RECORD_SEPARATOR = original_record_separator
     $OUTPUT_FIELD_SEPARATOR = original_field_separator
-    $_ = original_last_line
   end
 
   it "delegates nonblocking writes while inactive" do
